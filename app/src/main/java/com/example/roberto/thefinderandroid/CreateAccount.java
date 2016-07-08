@@ -3,7 +3,6 @@ package com.example.roberto.thefinderandroid;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,7 +26,6 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
         pass = (EditText) findViewById(R.id.password);
         firstName = (EditText) findViewById(R.id.firstName);
         lastName = (EditText) findViewById(R.id.lastName);
-
         signUp = (Button) findViewById(R.id.signUp);
         signUp.setOnClickListener(this);
     }
@@ -42,6 +40,7 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
 
             sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedpreferences.edit();
+
             editor.putString("UserName", userName);
             editor.putString("Paassword", password);
             editor.putString("FirstName", FName);

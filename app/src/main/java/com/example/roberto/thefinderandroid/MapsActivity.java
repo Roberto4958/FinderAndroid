@@ -38,15 +38,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         long b = 0;
-        final SharedPreferences prefs = getSharedPreferences("TheirLocation", Context.MODE_PRIVATE);
+        final SharedPreferences prefs = getSharedPreferences("Location", Context.MODE_PRIVATE);
         double lat = Double.longBitsToDouble(prefs.getLong("latitude", b));
         double lon = Double.longBitsToDouble(prefs.getLong("logitude", b));
+        String tittle = prefs.getString("place", null);
         final LatLng location = new LatLng(lat,lon);
 
         mMap = googleMap;
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.addMarker(new MarkerOptions().position(location));
+        mMap.addMarker(new MarkerOptions().position(location).title(tittle));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
     }
 }

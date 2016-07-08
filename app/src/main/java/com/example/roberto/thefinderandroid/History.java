@@ -13,10 +13,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import com.example.roberto.thefinderandroid.CustomAdapter.CustomAdapter;
 import com.example.roberto.thefinderandroid.CustomDiologes.HistoryDialog;
 import com.example.roberto.thefinderandroid.DataModel.Location;
 import java.util.ArrayList;
+
 
 public class History extends AppCompatActivity {
 
@@ -28,7 +30,7 @@ public class History extends AppCompatActivity {
     private ArrayList<Location>  locations;
     private SharedPreferences sharedpreferences;
     private HistoryDialog myDiolog;
-
+    private TextView place;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,15 +53,17 @@ public class History extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 StoreInformation((Location) parent.getItemAtPosition(position));
                 FragmentManager manager = getFragmentManager();
-                myDiolog = new HistoryDialog(((Location) parent.getItemAtPosition(position)).place);
-                myDiolog.show(manager, "my diolog");
+
+                myDiolog = new HistoryDialog();
+                myDiolog.onCreate(((Location) parent.getItemAtPosition(position)).place);
+                myDiolog.show(manager, ((Location) parent.getItemAtPosition(position)).place);
             }
         });
 
     }
 
     public void StoreInformation(Location location){
-        sharedpreferences = getSharedPreferences("TheirLocation", Context.MODE_PRIVATE);
+        sharedpreferences = getSharedPreferences("Location", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putLong("logitude", Double.doubleToRawLongBits(location.longitude));
         editor.putLong("latitude", Double.doubleToRawLongBits(location.latitude));
@@ -73,7 +77,7 @@ public class History extends AppCompatActivity {
         startActivity(intent);
     }
     public void onDeleteClick(View v){
-        final SharedPreferences prefs = getSharedPreferences("TheirLocation", Context.MODE_PRIVATE);
+        final SharedPreferences prefs = getSharedPreferences("Location", Context.MODE_PRIVATE);
         int id = prefs.getInt("LocationID", -1);
         remove(id);
 
@@ -99,6 +103,12 @@ public class History extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.logOut){
+
+            sharedpreferences = getSharedPreferences("Location", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
@@ -106,4 +116,5 @@ public class History extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

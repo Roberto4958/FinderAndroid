@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -36,6 +37,7 @@ public class StoreLocationDiologe extends DialogFragment implements View.OnClick
 
         View view = inflater.inflate(R.layout.add_location_diolog, null);
         getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         save = (Button) view.findViewById(R.id.save);
         save.setOnClickListener((View.OnClickListener) this);
         place = (EditText) view.findViewById(R.id.locationName);

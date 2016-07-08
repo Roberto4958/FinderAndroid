@@ -13,9 +13,7 @@ import android.location.*;
 import android.location.Location;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,7 +31,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     private TextView progress;
     private StoreLocationDiologe diologe;
     private String userLocation;
-
     private LocationManager locationMangaer = null;
     private LocationListener locationListener = null;
     private static final String TAG = "Debug";
@@ -54,14 +51,16 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         diologe = new StoreLocationDiologe();
         findLocation = (Button) findViewById(R.id.findLastLocation);
         findLocation.setVisibility(View.INVISIBLE);
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.logOut){
+            sharedpreferences = getSharedPreferences("Location", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
@@ -69,22 +68,34 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         }
         return super.onOptionsItemSelected(item);
     }
-
-    public void onHistoryclick(View v) {
-        Intent intent = new Intent("com.example.roberto.thefinderandroid.History");
-        startActivity(intent);
-    }
-
-    public void onFindLocationclick(View v) {
-        Intent intent = new Intent("com.example.roberto.thefinderandroid.MapsActivity");
-        startActivity(intent);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         return true;
+    }
+
+    public void StopLocationTracker(){
+        locationListener = null;
+    }
+    public void onHistoryclick(View v) {
+
+        Intent intent = new Intent("com.example.roberto.thefinderandroid.History");
+        startActivity(intent);
+
+        findLocation.setVisibility(View.INVISIBLE);
+        progress.setText("");
+        progress.setTextColor(Color.BLACK);
+    }
+
+    public void onFindLocationclick(View v) {
+
+        Intent intent = new Intent("com.example.roberto.thefinderandroid.MapsActivity");
+        startActivity(intent);
+
+        findLocation.setVisibility(View.INVISIBLE);
+        progress.setText("");
+        progress.setTextColor(Color.RED);
     }
 
 
@@ -95,24 +106,20 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     private Boolean displayGpsStatus() {
         ContentResolver contentResolver = getBaseContext().getContentResolver();
         boolean gpsStatus = Settings.Secure.isLocationProviderEnabled(contentResolver, LocationManager.GPS_PROVIDER);
-        if (gpsStatus) {
-            return true;
+        if (gpsStatus) return true;
+        else return false;
 
-        } else {
-            return false;
-        }
     }
 
     protected void alertbox(String title, String mymessage) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Your Device's GPS is Disable").setCancelable(false)
-                .setTitle("** Gps Status **").setPositiveButton("Gps On",
+                .setTitle("** Gps Status **").setPositiveButton("GPS On",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // finish the current activity
                         // AlertBoxAdvance.this.finish();
-                        Intent myIntent = new Intent(
-                                Settings.ACTION_SECURITY_SETTINGS);
+                        Intent myIntent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
                         startActivity(myIntent);
                         dialog.cancel();
                     }
@@ -130,16 +137,12 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
     @Override
     public void onDiologMessege(String place) {
-        userLocation =place;
+        userLocation = place;
         flag = displayGpsStatus();
         if (flag) {
-
-            Log.v(TAG, "onClick");
             locationListener = new MyLocationListener();
             progress.setText("Please move your device");
-
-            locationMangaer.requestLocationUpdates(LocationManager
-                    .GPS_PROVIDER, 5000, 10, locationListener);
+            locationMangaer.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
         } else {
             alertbox("Gps Status!!", "Your GPS is: OFF");
         }
@@ -150,7 +153,7 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         @Override
         public void onLocationChanged(Location loc) {
 
-            sharedpreferences = getSharedPreferences("TheirLocation", Context.MODE_PRIVATE);
+            sharedpreferences = getSharedPreferences("Location", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putLong("logitude", Double.doubleToRawLongBits(loc.getLongitude()));
             editor.putLong("latitude", Double.doubleToRawLongBits(loc.getLatitude()));
@@ -162,6 +165,7 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
             findLocation.setVisibility(View.VISIBLE);
 
             Toast.makeText(getBaseContext(), " Lat: " + loc.getLatitude() + "\n Lng: " + loc.getLongitude(), Toast.LENGTH_SHORT).show();
+            StopLocationTracker();
         }
 
         @Override
