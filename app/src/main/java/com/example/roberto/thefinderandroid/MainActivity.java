@@ -9,13 +9,26 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
+
+import com.example.roberto.thefinderandroid.CustomAdapter.StringSetAdapter;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     EditText Username, pass;
     Button logIn, addAcount;
     private SharedPreferences sharedpreferences;
+
+    String l1 = "1 37.402288 -122.096560 Pool";
+    String l2 = "2 37.390421 -122.083752 Library";
+    String l3 = "3 37.333287 -121.879723 SJSU";
+    String l4 = "4 37.399986 -122.067555 Park";
+    Set<String> Locations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +63,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 editor.putString("FirstName", "First Name");
                 editor.putString("LastName", "Last Name");
                 editor.putString("AuthToken", "lejfqerlbvlqhjevrljhervlqjhweqer");
+               // editor.commit();
+
+                Locations = new HashSet<String>();
+                Locations.add(l1);
+                Locations.add(l2);
+                Locations.add(l3);
+                Locations.add(l4);
+
+                editor.putStringSet("Locations", Locations);
+                editor.putInt("size", Locations.size()+1);
                 editor.commit();
 
                 Intent intent = new Intent("com.example.roberto.thefinderandroid.User");

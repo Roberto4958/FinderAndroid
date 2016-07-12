@@ -23,6 +23,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
 
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator{
 
@@ -56,7 +59,7 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.logOut){
-            sharedpreferences = getSharedPreferences("Location", Context.MODE_PRIVATE);
+            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
             sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
@@ -68,6 +71,7 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         }
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -75,9 +79,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         return true;
     }
 
-    public void StopLocationTracker(){
-        locationListener = null;
-    }
     public void onHistoryclick(View v) {
 
         Intent intent = new Intent("com.example.roberto.thefinderandroid.History");
@@ -85,7 +86,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
         findLocation.setVisibility(View.INVISIBLE);
         progress.setText("");
-        progress.setTextColor(Color.BLACK);
     }
 
     public void onFindLocationclick(View v) {
@@ -95,12 +95,13 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
         findLocation.setVisibility(View.INVISIBLE);
         progress.setText("");
-        progress.setTextColor(Color.RED);
     }
 
 
     public void onAddLocationClick(View view) {
+
         diologe.show(manager, "my diolog");
+        progress.setTextColor(Color.RED);
     }
 
     private Boolean displayGpsStatus() {
@@ -149,22 +150,48 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
     }
 
+    public void addToHistory(String loc){
+        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        Set collection = sharedpreferences.getStringSet("Locations", null);
+        int currentSize = sharedpreferences.getInt("size", 0)+1;
+        try {
+            collection.add(currentSize + " " + loc);
+        }
+        catch (Exception exception){
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            collection = new HashSet();
+            collection.add(1 + " " + loc);
+            editor.putStringSet("Locations",collection);
+            editor.putInt("size", 1);
+            editor.commit();
+            return;
+
+        }
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putStringSet("Locations",collection);
+        editor.putInt("size", currentSize);
+        editor.commit();
+    }
+
+    public void StopLocationTracker(){
+        locationMangaer.removeUpdates(locationListener);
+    }
+
     private class MyLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location loc) {
 
-            sharedpreferences = getSharedPreferences("Location", Context.MODE_PRIVATE);
+            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putLong("logitude", Double.doubleToRawLongBits(loc.getLongitude()));
             editor.putLong("latitude", Double.doubleToRawLongBits(loc.getLatitude()));
             editor.putString("place", userLocation);
             editor.commit();
-
             progress.setText("Success");
             progress.setTextColor(Color.GREEN);
             findLocation.setVisibility(View.VISIBLE);
-
             Toast.makeText(getBaseContext(), " Lat: " + loc.getLatitude() + "\n Lng: " + loc.getLongitude(), Toast.LENGTH_SHORT).show();
+            addToHistory(loc.getLatitude() +" "+ loc.getLongitude()+" "+userLocation);
             StopLocationTracker();
         }
 

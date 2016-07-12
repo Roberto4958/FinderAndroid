@@ -38,7 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         long b = 0;
-        final SharedPreferences prefs = getSharedPreferences("Location", Context.MODE_PRIVATE);
+        final SharedPreferences prefs = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
         double lat = Double.longBitsToDouble(prefs.getLong("latitude", b));
         double lon = Double.longBitsToDouble(prefs.getLong("logitude", b));
         String tittle = prefs.getString("place", null);
