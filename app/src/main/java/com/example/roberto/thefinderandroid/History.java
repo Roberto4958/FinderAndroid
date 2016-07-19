@@ -5,9 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,27 +16,27 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.roberto.thefinderandroid.Backend.HistoryAPICall;
+import com.example.roberto.thefinderandroid.Backend.ServerConnection;
 import com.example.roberto.thefinderandroid.CustomAdapter.CustomAdapter;
-import com.example.roberto.thefinderandroid.CustomAdapter.StringSetAdapter;
 import com.example.roberto.thefinderandroid.CustomDiologes.HistoryDialog;
 import com.example.roberto.thefinderandroid.DataModel.Location;
-import com.google.android.gms.common.server.converter.StringToIntConverter;
-
+import com.example.roberto.thefinderandroid.ResponseData.HistoryResponse;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 
-public class History extends AppCompatActivity {
+public class History extends AppCompatActivity implements ServerConnection.HistoryResponseCommunicator {
 
 
     private SharedPreferences sharedpreferences;
     private HistoryDialog myDiolog;
     private TextView place;
     private ArrayList<String> locations;
-    private String currentClicked;
+    private Location currentClicked;
     private ListView myList;
-    private StringSetAdapter myAdapter;
+    private CustomAdapter myAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,47 +46,25 @@ public class History extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-        Set collection = sharedpreferences.getStringSet("Locations", null);
-        if(collection == null) return;
-        locations = new ArrayList<String>((Set) collection);
-        locations = sort(locations);
-        myList =(ListView) findViewById(R.id.listView);
-        myAdapter = new StringSetAdapter(this, locations);
-        myList.setAdapter(myAdapter);
-        myList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                currentClicked = ((String) parent.getItemAtPosition(position));
-                StoreInformation(currentClicked);
-                FragmentManager manager = getFragmentManager();
-                myDiolog = new HistoryDialog();
-                String[] Location = currentClicked.split(" ");
-                String nameOfPlace = Location[3];
-                for(int i=4; i< Location.length; i++){
-                    nameOfPlace += " "+Location[i];
-                }
-                myDiolog.onCreate(nameOfPlace);
-                myDiolog.show(manager, nameOfPlace);
-            }
-        });
+        int userID = sharedpreferences.getInt("UserID", -1);
+        String auth = sharedpreferences.getString("AuthToken", null);
+
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            HistoryAPICall call = new HistoryAPICall(this);
+            call.getHistory(userID, auth);
+        }
+        else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
     }
 
-    public void StoreInformation(String loc){
-
-        String[] Location = loc.split(" ");
-        Double lat = Double.parseDouble((String)Location[1]);
-        Double lon = Double.parseDouble((String)Location[2]);
-        int id = Integer.parseInt((String)Location[0]);
-        String nameOfPlace =Location[3];
-        for(int i=4; i< Location.length; i++){
-            nameOfPlace += " "+Location[i];
-        }
-        SharedPreferences preferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+    public void StoreInformation(Location loc){
+        sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putLong("logitude", Double.doubleToRawLongBits(lon));
-        editor.putLong("latitude", Double.doubleToRawLongBits(lat));
-        editor.putInt("LocationID", id);
-        editor.putString("place", nameOfPlace);
+        editor.putLong("logitude", Double.doubleToRawLongBits(loc.longtitude));
+        editor.putLong("latitude", Double.doubleToRawLongBits(loc.latitude));
+        editor.putInt("LocationID", loc.locationID);
+        editor.putString("place", loc.place);
         editor.commit();
     }
 
@@ -96,27 +75,9 @@ public class History extends AppCompatActivity {
     }
 
     public void onDeleteClick(View v){
-
-        remove(currentClicked);
-        myAdapter = new StringSetAdapter(this, locations);
-        myList.setAdapter(myAdapter);
-        myDiolog.dismiss();
+        Toast.makeText(getBaseContext(), "Sorry this is not Supported", Toast.LENGTH_SHORT).show();
     }
 
-    public void remove(String currentRow){
-        Set collection = sharedpreferences.getStringSet("Locations", null);
-        for(int i=0; i < locations.size(); i++) {
-            int b = Integer.parseInt((String)locations.get(i).substring(0, 1));
-            if( currentRow.equals(locations.get(i))) {
-                locations.remove(i);
-                collection.remove(currentRow);
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putStringSet("Locations", collection);
-                editor.commit();
-                return;
-            }
-        }
-    }
 
     public ArrayList<String> sort(ArrayList<String> loc){
 
@@ -165,4 +126,25 @@ public class History extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void getHistoryResponse(HistoryResponse r) {
+        ArrayList<Location> collection = r.result;
+        if(collection == null) return;
+        //locations = sort(locations);
+        myList =(ListView) findViewById(R.id.listView);
+        myAdapter = new CustomAdapter(this, collection);
+        myList.setAdapter(myAdapter);
+        myList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                currentClicked = ((Location) parent.getItemAtPosition(position));
+                StoreInformation(currentClicked);
+                FragmentManager manager = getFragmentManager();
+                myDiolog = new HistoryDialog();
+                String nameOfPlace =((Location) parent.getItemAtPosition(position)).place;
+                myDiolog.onCreate(nameOfPlace); // to have a refrence of the name in the diologe
+                myDiolog.show(manager, nameOfPlace);
+            }
+        });
+    }
 }

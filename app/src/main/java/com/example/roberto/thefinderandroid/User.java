@@ -11,6 +11,8 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.location.*;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -21,13 +23,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.example.roberto.thefinderandroid.Backend.FindLocationAPICall;
+import com.example.roberto.thefinderandroid.Backend.ServerConnection;
 import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
+import com.example.roberto.thefinderandroid.ResponseData.LocationResponse;
 
-import java.util.HashSet;
-import java.util.Set;
-
-
-public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator{
+public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, ServerConnection.LocationResponseCommunicator {
 
     private SharedPreferences sharedpreferences;
     private Button findLocation;
@@ -36,7 +37,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     private String userLocation;
     private LocationManager locationMangaer = null;
     private LocationListener locationListener = null;
-    private static final String TAG = "Debug";
     private Boolean flag = false;
     private FragmentManager manager;
     /**
@@ -89,17 +89,11 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     }
 
     public void onFindLocationclick(View v) {
-
         Intent intent = new Intent("com.example.roberto.thefinderandroid.MapsActivity");
         startActivity(intent);
-
-        findLocation.setVisibility(View.INVISIBLE);
-        progress.setText("");
     }
 
-
     public void onAddLocationClick(View view) {
-
         diologe.show(manager, "my diolog");
         progress.setTextColor(Color.RED);
     }
@@ -150,49 +144,49 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
     }
 
-    public void addToHistory(String loc){
-        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-        Set collection = sharedpreferences.getStringSet("Locations", null);
-        int currentSize = sharedpreferences.getInt("size", 0)+1;
-        try {
-            collection.add(currentSize + " " + loc);
-        }
-        catch (Exception exception){
-            SharedPreferences.Editor editor = sharedpreferences.edit();
-            collection = new HashSet();
-            collection.add(1 + " " + loc);
-            editor.putStringSet("Locations",collection);
-            editor.putInt("size", 1);
-            editor.commit();
-            return;
-
-        }
-        SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putStringSet("Locations",collection);
-        editor.putInt("size", currentSize);
-        editor.commit();
-    }
-
     public void StopLocationTracker(){
         locationMangaer.removeUpdates(locationListener);
+    }
+
+    @Override
+    public void getLocationResponse(LocationResponse r) {
+        com.example.roberto.thefinderandroid.DataModel.Location loc = r.result;
+        if (loc != null){
+            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.putLong("logitude", Double.doubleToRawLongBits(loc.longtitude));
+            editor.putLong("latitude", Double.doubleToRawLongBits(loc.latitude));
+            editor.putInt("LocationID", loc.locationID);
+            editor.putString("place", loc.place);
+            editor.commit();
+        }
+        else Toast.makeText(getBaseContext(), "Response is null", Toast.LENGTH_SHORT).show();
+    }
+
+    public void startFindingLastLocation(){
+        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        int userID = sharedpreferences.getInt("UserID", -1);
+        String auth = sharedpreferences.getString("AuthToken", null);
+
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            FindLocationAPICall call = new FindLocationAPICall(this);
+            call.findLastLocation(userID, auth);
+        }
+        else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
     }
 
     private class MyLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location loc) {
 
-            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedpreferences.edit();
-            editor.putLong("logitude", Double.doubleToRawLongBits(loc.getLongitude()));
-            editor.putLong("latitude", Double.doubleToRawLongBits(loc.getLatitude()));
-            editor.putString("place", userLocation);
-            editor.commit();
             progress.setText("Success");
             progress.setTextColor(Color.GREEN);
             findLocation.setVisibility(View.VISIBLE);
             Toast.makeText(getBaseContext(), " Lat: " + loc.getLatitude() + "\n Lng: " + loc.getLongitude(), Toast.LENGTH_SHORT).show();
-            addToHistory(loc.getLatitude() +" "+ loc.getLongitude()+" "+userLocation);
             StopLocationTracker();
+            startFindingLastLocation();
         }
 
         @Override

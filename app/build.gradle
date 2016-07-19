@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.0"
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "com.example.roberto.thefinderandroid"
@@ -27,4 +28,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.google.android.gms:play-services-maps:7.8.0'
+    compile files('libs/gson-2.2.4.jar')
 }

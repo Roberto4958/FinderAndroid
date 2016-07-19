@@ -43,8 +43,6 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
 
             editor.putString("UserName", userName);
             editor.putString("Paassword", password);
-            editor.putString("FirstName", FName);
-            editor.putString("LastName", LName);
             editor.putString("AuthToken", "lejfqerlbvlqhjevrljhervlqjhweqer");
             editor.commit();
             Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
