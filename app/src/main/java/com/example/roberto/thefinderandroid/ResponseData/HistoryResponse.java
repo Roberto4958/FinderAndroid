@@ -15,4 +15,7 @@ public class HistoryResponse extends Response{
         super(s);
         result = l;
     }
+    public interface HistoryResponseCommunicator{
+        public void getHistoryResponse(HistoryResponse r);
+    }
 }

@@ -4,15 +4,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.example.roberto.thefinderandroid.Backend.CreateAccountAPICall;
+import com.example.roberto.thefinderandroid.Backend.LogInAPICall;
+import com.example.roberto.thefinderandroid.ResponseData.UserResponse;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, UserResponse.UserResponseCommunicator {
     EditText Username, pass;
     Button logIn, addAcount;
     private SharedPreferences sharedpreferences;
@@ -41,26 +46,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(view.getId() == R.id.logIn){
             String userName = Username.getText().toString();
             String password = pass.getText().toString();
-            if(userName.equals("user")&& password.equals("pass") ){
 
-                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putInt("UserID", 1);
-                editor.putString("Password", password);
-                editor.putString("AuthToken", "4w6xdml9hhfje0s0ud9tywgfcgru3g");
-                editor.commit();
+            ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 
-                Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
-                startActivity(intent);
+            if (networkInfo != null && networkInfo.isConnected()) {
+                LogInAPICall call = new LogInAPICall(this);
+                call.logIn(userName, password);
             }
-            else{
-                Toast.makeText(getBaseContext(), "Wrong user name or password", Toast.LENGTH_SHORT).show();
-            }
+            else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
         }
         else if(view.getId() == R.id.addAcount){
             Intent intent = new Intent(".CreateAccount");
             startActivity(intent);
         }
+    }
 
+    @Override
+    public void getUserResponse(UserResponse r) {
+        if(r.status.equals("OK")) {
+            com.example.roberto.thefinderandroid.DataModel.User user = r.results;
+            if(user == null) Toast.makeText(getBaseContext(), "Wrong user name or password", Toast.LENGTH_SHORT).show();
+            else {
+                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putInt("UserID", user.ID);
+                editor.putString("AuthToken", user.authToken);
+                editor.commit();
+                Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
+                startActivity(intent);
+            }
+        }
+        else Toast.makeText(getBaseContext(), "Servers are down", Toast.LENGTH_SHORT).show();
     }
 }

@@ -24,11 +24,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.example.roberto.thefinderandroid.Backend.FindLocationAPICall;
-import com.example.roberto.thefinderandroid.Backend.ServerConnection;
 import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
 import com.example.roberto.thefinderandroid.ResponseData.LocationResponse;
 
-public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, ServerConnection.LocationResponseCommunicator {
+public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, LocationResponse.LocationResponseCommunicator {
 
     private SharedPreferences sharedpreferences;
     private Button findLocation;
@@ -89,8 +88,18 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     }
 
     public void onFindLocationclick(View v) {
-        Intent intent = new Intent("com.example.roberto.thefinderandroid.MapsActivity");
-        startActivity(intent);
+
+        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        int userID = sharedpreferences.getInt("UserID", -1);
+        String auth = sharedpreferences.getString("AuthToken", null);
+
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            FindLocationAPICall call = new FindLocationAPICall(this);
+            call.findLastLocation(userID, auth);
+        }
+        else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
     }
 
     public void onAddLocationClick(View view) {
@@ -151,7 +160,7 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     @Override
     public void getLocationResponse(LocationResponse r) {
         com.example.roberto.thefinderandroid.DataModel.Location loc = r.result;
-        if (loc != null){
+        if (r.status.equals("OK")){
             sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putLong("logitude", Double.doubleToRawLongBits(loc.longtitude));
@@ -159,22 +168,15 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
             editor.putInt("LocationID", loc.locationID);
             editor.putString("place", loc.place);
             editor.commit();
+
+            Intent intent = new Intent("com.example.roberto.thefinderandroid.MapsActivity");
+            startActivity(intent);
         }
-        else Toast.makeText(getBaseContext(), "Response is null", Toast.LENGTH_SHORT).show();
+        else Toast.makeText(getBaseContext(), "Servers are down", Toast.LENGTH_SHORT).show();
     }
 
     public void startFindingLastLocation(){
-        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-        int userID = sharedpreferences.getInt("UserID", -1);
-        String auth = sharedpreferences.getString("AuthToken", null);
 
-        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            FindLocationAPICall call = new FindLocationAPICall(this);
-            call.findLastLocation(userID, auth);
-        }
-        else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
     }
 
     private class MyLocationListener implements LocationListener {

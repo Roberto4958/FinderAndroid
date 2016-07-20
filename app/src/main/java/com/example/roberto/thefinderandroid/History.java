@@ -17,17 +17,18 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.roberto.thefinderandroid.Backend.HistoryAPICall;
-import com.example.roberto.thefinderandroid.Backend.ServerConnection;
+import com.example.roberto.thefinderandroid.Backend.LogOutAPICall;
 import com.example.roberto.thefinderandroid.CustomAdapter.CustomAdapter;
 import com.example.roberto.thefinderandroid.CustomDiologes.HistoryDialog;
 import com.example.roberto.thefinderandroid.DataModel.Location;
 import com.example.roberto.thefinderandroid.ResponseData.HistoryResponse;
+import com.example.roberto.thefinderandroid.ResponseData.UserResponse;
+
 import java.util.ArrayList;
 
 
-public class History extends AppCompatActivity implements ServerConnection.HistoryResponseCommunicator {
+public class History extends AppCompatActivity implements HistoryResponse.HistoryResponseCommunicator, UserResponse.UserResponseCommunicator {
 
 
     private SharedPreferences sharedpreferences;
@@ -79,30 +80,6 @@ public class History extends AppCompatActivity implements ServerConnection.Histo
     }
 
 
-    public ArrayList<String> sort(ArrayList<String> loc){
-
-        for(int i =1; i < loc.size(); i++){
-            String id = loc.get(i-1).substring(0, 1);
-            int MaxID = Integer.parseInt(id);
-            String ID = loc.get(i).substring(0, 1);
-            int currentID = Integer.parseInt(ID);
-            int b=i;
-
-            while(MaxID < currentID && b>0){
-
-                String save = loc.get(b);
-                loc.set(b, loc.get(b-1));
-                loc.set(b-1, save);
-                b--;
-                if(b>0) {
-                    MaxID = Integer.parseInt(loc.get(b - 1).substring(0, 1));
-                    currentID = Integer.parseInt(loc.get(b).substring(0, 1));
-                }
-            }
-        }
-        return loc;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -113,14 +90,19 @@ public class History extends AppCompatActivity implements ServerConnection.Histo
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.logOut){
 
-            sharedpreferences = getSharedPreferences("Location", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
-            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
+            ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected()) {
 
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+                int userID = sharedpreferences.getInt("UserID", -1);
+                String auth = sharedpreferences.getString("AuthToken", null);
+
+                LogOutAPICall call = new LogOutAPICall(this);
+                call.logOut(userID, auth);
+            }
+            else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
+
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -130,7 +112,6 @@ public class History extends AppCompatActivity implements ServerConnection.Histo
     public void getHistoryResponse(HistoryResponse r) {
         ArrayList<Location> collection = r.result;
         if(collection == null) return;
-        //locations = sort(locations);
         myList =(ListView) findViewById(R.id.listView);
         myAdapter = new CustomAdapter(this, collection);
         myList.setAdapter(myAdapter);
@@ -146,5 +127,20 @@ public class History extends AppCompatActivity implements ServerConnection.Histo
                 myDiolog.show(manager, nameOfPlace);
             }
         });
+    }
+
+    @Override
+    public void getUserResponse(UserResponse r) {
+
+        if(r.status.equals("OK")) {
+            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        else Toast.makeText(getBaseContext(), "Server is down", Toast.LENGTH_SHORT).show();
     }
 }

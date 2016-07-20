@@ -27,10 +27,11 @@ import java.net.URL;
  */
 public class ServerConnection extends AsyncTask<String, Void, String> {
 
-    public LocationResponseCommunicator communicator;
+    public String request;
 
-    public ServerConnection(){
+    public ServerConnection(String r){
         super();
+        request =r;
     }
 
     @Override
@@ -49,8 +50,8 @@ public class ServerConnection extends AsyncTask<String, Void, String> {
     // a string.
     private String downloadUrl(String myurl) throws IOException {
         InputStream is = null;
-        // Only display the first 500 characters of the retrieved
-        // web page content.
+
+        //We change this value to the size of input stream
         int len = 500;
 
         try {
@@ -58,12 +59,13 @@ public class ServerConnection extends AsyncTask<String, Void, String> {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);
             conn.setConnectTimeout(15000 /* milliseconds */);
-            conn.setRequestMethod("GET");
+            conn.setRequestMethod(request);
             conn.setDoInput(true);
             // Starts the query
             conn.connect();
             int response = conn.getResponseCode();
             is = conn.getInputStream();
+            len = is.available();
             // Convert the InputStream into a string
             String contentAsString = readIt(is, len);
             return contentAsString;
@@ -83,11 +85,5 @@ public class ServerConnection extends AsyncTask<String, Void, String> {
         char[] buffer = new char[len];
         reader.read(buffer);
         return new String(buffer);
-    }
-    public interface LocationResponseCommunicator{
-        public void getLocationResponse(LocationResponse r);
-    }
-    public interface HistoryResponseCommunicator{
-        public void getHistoryResponse(HistoryResponse r);
     }
 }

@@ -45,14 +45,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double lon = Double.longBitsToDouble(prefs.getLong("logitude", b));
         String tittle = prefs.getString("place", null);
         final LatLng location = new LatLng(lat,lon);
-
-        Log.v("Current Location", lat+", "+lon);
         mMap = googleMap;
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.addMarker(new MarkerOptions().position(location).title(tittle));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
 
     }
 }

@@ -13,4 +13,8 @@ public class LocationResponse extends Response{
         super(s);
         result = l;
     }
+
+    public interface LocationResponseCommunicator{
+        public void getLocationResponse(LocationResponse r);
+    }
 }

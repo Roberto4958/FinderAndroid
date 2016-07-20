@@ -9,4 +9,8 @@ public class Response {
     public Response(String s){
         status = s;
     }
+
+    public interface ResponseCommunicator{
+        public void getResponse(Response r);
+    }
 }
