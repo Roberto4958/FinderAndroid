@@ -1,29 +1,29 @@
 package com.example.roberto.thefinderandroid;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.util.Log;
 
+
+import com.example.roberto.thefinderandroid.DataModel.Location;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
     private GoogleMap mMap;
+    private Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
 
@@ -39,17 +39,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        long b = 0;
-        final SharedPreferences prefs = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
-        double lat = Double.longBitsToDouble(prefs.getLong("latitude", b));
-        double lon = Double.longBitsToDouble(prefs.getLong("logitude", b));
-        String tittle = prefs.getString("place", null);
-        final LatLng location = new LatLng(lat,lon);
+
+        String l = getIntent().getStringExtra("Location");
+        Gson gson =  new Gson();
+        location = gson.fromJson(l, Location.class);
         mMap = googleMap;
+
+        final LatLng loc = new LatLng(location.latitude,location.longtitude);
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.addMarker(new MarkerOptions().position(location).title(tittle));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+        mMap.addMarker(new MarkerOptions().position(loc).title(location.place));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
 
     }
+
 }

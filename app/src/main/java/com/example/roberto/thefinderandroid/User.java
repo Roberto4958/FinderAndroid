@@ -23,11 +23,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.roberto.thefinderandroid.Backend.AddLocationAPICall;
 import com.example.roberto.thefinderandroid.Backend.FindLocationAPICall;
+import com.example.roberto.thefinderandroid.Backend.LogOutAPICall;
 import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
 import com.example.roberto.thefinderandroid.ResponseData.LocationResponse;
+import com.example.roberto.thefinderandroid.ResponseData.Response;
+import com.google.gson.Gson;
 
-public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, LocationResponse.LocationResponseCommunicator {
+public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, Response.ResponseCommunicator,  LocationResponse.LocationResponseCommunicator {
 
     private SharedPreferences sharedpreferences;
     private Button findLocation;
@@ -38,6 +43,8 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     private LocationListener locationListener = null;
     private Boolean flag = false;
     private FragmentManager manager;
+    private int userID;
+    private String auth;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -58,14 +65,24 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.logOut){
-            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
-            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
+            ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected()) {
 
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+                int userID = sharedpreferences.getInt("UserID", -1);
+                String auth = sharedpreferences.getString("AuthToken", null);
+                LogOutAPICall call = new LogOutAPICall(this);
+                call.logOut(userID, auth);
+                sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+                sharedpreferences.edit().clear().commit();
+                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+                sharedpreferences.edit().clear().commit();
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+            else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -89,10 +106,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
     public void onFindLocationclick(View v) {
 
-        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-        int userID = sharedpreferences.getInt("UserID", -1);
-        String auth = sharedpreferences.getString("AuthToken", null);
-
         ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
@@ -104,7 +117,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
     public void onAddLocationClick(View view) {
         diologe.show(manager, "my diolog");
-        progress.setTextColor(Color.RED);
     }
 
     private Boolean displayGpsStatus() {
@@ -112,7 +124,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         boolean gpsStatus = Settings.Secure.isLocationProviderEnabled(contentResolver, LocationManager.GPS_PROVIDER);
         if (gpsStatus) return true;
         else return false;
-
     }
 
     protected void alertbox(String title, String mymessage) {
@@ -146,49 +157,86 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         if (flag) {
             locationListener = new MyLocationListener();
             progress.setText("Please move your device");
+            progress.setTextColor(Color.RED);
             locationMangaer.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
         } else {
             alertbox("Gps Status!!", "Your GPS is: OFF");
         }
-
     }
 
     public void StopLocationTracker(){
         locationMangaer.removeUpdates(locationListener);
     }
 
-    @Override
-    public void getLocationResponse(LocationResponse r) {
-        com.example.roberto.thefinderandroid.DataModel.Location loc = r.result;
-        if (r.status.equals("OK")){
-            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedpreferences.edit();
-            editor.putLong("logitude", Double.doubleToRawLongBits(loc.longtitude));
-            editor.putLong("latitude", Double.doubleToRawLongBits(loc.latitude));
-            editor.putInt("LocationID", loc.locationID);
-            editor.putString("place", loc.place);
-            editor.commit();
 
-            Intent intent = new Intent("com.example.roberto.thefinderandroid.MapsActivity");
-            startActivity(intent);
+    public void storeLocation(Location loc){
+
+        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        userID = sharedpreferences.getInt("UserID", -1);
+        auth = sharedpreferences.getString("AuthToken", null);
+
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            AddLocationAPICall call = new AddLocationAPICall(this);
+            call.addLocation(userID, loc.getLatitude(), loc.getLongitude(), userLocation, auth);
         }
-        else Toast.makeText(getBaseContext(), "Servers are down", Toast.LENGTH_SHORT).show();
+        else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
     }
 
-    public void startFindingLastLocation(){
+    @Override
+    public void getResponse(Response r) {
+        if(r.status.equals("OK")){
+            progress.setText("Success");
+            progress.setTextColor(Color.GREEN);
+            findLocation.setVisibility(View.VISIBLE);
+        }
+        else if(r.status.equals("TOKENCLEARED")){
+            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        else{
+            progress.setText("");
+            Toast.makeText(getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
+        }
+    }
 
+    @Override
+    public void getLocationResponse(LocationResponse r) {
+
+        findLocation.setVisibility(View.INVISIBLE);
+        progress.setText("");
+
+        if(r.status.equals("OK")) {
+            Gson gson = new Gson();
+            String loc = gson.toJson(r.result);
+            Intent intent = new Intent(User.this, MapsActivity.class).putExtra("Location", loc);
+            startActivity(intent);
+        }
+        else if(r.status.equals("TOKENCLEARED")){
+            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        else Toast.makeText(getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
     }
 
     private class MyLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location loc) {
 
-            progress.setText("Success");
-            progress.setTextColor(Color.GREEN);
-            findLocation.setVisibility(View.VISIBLE);
-            Toast.makeText(getBaseContext(), " Lat: " + loc.getLatitude() + "\n Lng: " + loc.getLongitude(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getBaseContext(), " Lat: " + loc.getLatitude() + "\n Lng: " + loc.getLongitude(), Toast.LENGTH_SHORT).show();
             StopLocationTracker();
-            startFindingLastLocation();
+            storeLocation(loc);
         }
 
         @Override

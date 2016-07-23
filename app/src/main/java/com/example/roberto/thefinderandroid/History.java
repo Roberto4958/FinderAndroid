@@ -17,18 +17,23 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.roberto.thefinderandroid.Backend.DeleteAPICall;
 import com.example.roberto.thefinderandroid.Backend.HistoryAPICall;
 import com.example.roberto.thefinderandroid.Backend.LogOutAPICall;
 import com.example.roberto.thefinderandroid.CustomAdapter.CustomAdapter;
 import com.example.roberto.thefinderandroid.CustomDiologes.HistoryDialog;
 import com.example.roberto.thefinderandroid.DataModel.Location;
 import com.example.roberto.thefinderandroid.ResponseData.HistoryResponse;
+import com.example.roberto.thefinderandroid.ResponseData.Response;
 import com.example.roberto.thefinderandroid.ResponseData.UserResponse;
+import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 
-public class History extends AppCompatActivity implements HistoryResponse.HistoryResponseCommunicator, UserResponse.UserResponseCommunicator {
+public class History extends AppCompatActivity implements HistoryResponse.HistoryResponseCommunicator, Response.ResponseCommunicator {
 
 
     private SharedPreferences sharedpreferences;
@@ -38,6 +43,8 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
     private Location currentClicked;
     private ListView myList;
     private CustomAdapter myAdapter;
+    private int userID;
+    private String auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +54,8 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-        int userID = sharedpreferences.getInt("UserID", -1);
-        String auth = sharedpreferences.getString("AuthToken", null);
+        userID = sharedpreferences.getInt("UserID", -1);
+        auth = sharedpreferences.getString("AuthToken", null);
 
         ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -71,14 +78,20 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
 
     public void onOpenMapClick(View v){
         myDiolog.dismiss();
-        Intent intent = new Intent("com.example.roberto.thefinderandroid.MapsActivity");
+        Gson gson = new Gson();
+        String loc = gson.toJson(currentClicked);
+        Intent intent =  new Intent(History.this, MapsActivity.class).putExtra("Location", loc);
         startActivity(intent);
     }
 
-    public void onDeleteClick(View v){
-        Toast.makeText(getBaseContext(), "Sorry this is not Supported", Toast.LENGTH_SHORT).show();
+    public void onDeleteClick(View v)throws IOException{
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            DeleteAPICall call = new DeleteAPICall(this);
+            call.delete(userID, currentClicked.locationID ,auth);
+        }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -89,17 +102,19 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.logOut){
-
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
 
-                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-                int userID = sharedpreferences.getInt("UserID", -1);
-                String auth = sharedpreferences.getString("AuthToken", null);
-
                 LogOutAPICall call = new LogOutAPICall(this);
                 call.logOut(userID, auth);
+                sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+                sharedpreferences.edit().clear().commit();
+                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+                sharedpreferences.edit().clear().commit();
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
             else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
 
@@ -110,29 +125,26 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
 
     @Override
     public void getHistoryResponse(HistoryResponse r) {
-        ArrayList<Location> collection = r.result;
-        if(collection == null) return;
-        myList =(ListView) findViewById(R.id.listView);
-        myAdapter = new CustomAdapter(this, collection);
-        myList.setAdapter(myAdapter);
-        myList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                currentClicked = ((Location) parent.getItemAtPosition(position));
-                StoreInformation(currentClicked);
-                FragmentManager manager = getFragmentManager();
-                myDiolog = new HistoryDialog();
-                String nameOfPlace =((Location) parent.getItemAtPosition(position)).place;
-                myDiolog.onCreate(nameOfPlace); // to have a refrence of the name in the diologe
-                myDiolog.show(manager, nameOfPlace);
-            }
-        });
-    }
-
-    @Override
-    public void getUserResponse(UserResponse r) {
-
         if(r.status.equals("OK")) {
+            ArrayList<Location> collection = r.result;
+            if (collection.size() < 1) return;
+            myList = (ListView) findViewById(R.id.listView);
+            myAdapter = new CustomAdapter(this, collection);
+            myList.setAdapter(myAdapter);
+            myList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    currentClicked = ((Location) parent.getItemAtPosition(position));
+                    StoreInformation(currentClicked);
+                    FragmentManager manager = getFragmentManager();
+                    myDiolog = new HistoryDialog();
+                    String nameOfPlace = ((Location) parent.getItemAtPosition(position)).place;
+                    myDiolog.onCreate(nameOfPlace); // to have a refrence of the name in the diologe
+                    myDiolog.show(manager, nameOfPlace);
+                }
+            });
+        }
+        else if(r.status.equals("TOKENCLEARED")){
             sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
             sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
@@ -141,6 +153,35 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }
-        else Toast.makeText(getBaseContext(), "Server is down", Toast.LENGTH_SHORT).show();
+        else{
+            Toast.makeText(getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
+            return;
+        }
+    }
+
+    @Override
+    public void getResponse(Response r) {
+        if(r.status.equals("OK")){
+
+            ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected()) {
+                HistoryAPICall call = new HistoryAPICall(this);
+                call.getHistory(userID, auth);
+            }
+            else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
+        }
+        else if(r.status.equals("TOKENCLEARED")){
+            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+            sharedpreferences.edit().clear().commit();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        else Toast.makeText(getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
+
+        myDiolog.dismiss();
     }
 }

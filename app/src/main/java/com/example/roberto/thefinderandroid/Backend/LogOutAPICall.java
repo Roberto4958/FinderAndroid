@@ -28,14 +28,10 @@ public class LogOutAPICall {
 
         public LogOutSC(String r) {super(r);}
 
-
         @Override
         protected void onPostExecute(String result) {
-            Log.v("Response", result);
             Gson gson = new Gson();
             Response r = gson.fromJson(result, Response.class);
-            communicator = (Response.ResponseCommunicator) activity;
-            communicator.getResponse(r);
         }
     }
 }
