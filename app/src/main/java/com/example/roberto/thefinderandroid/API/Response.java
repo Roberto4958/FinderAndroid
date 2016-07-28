@@ -1,4 +1,4 @@
-package com.example.roberto.thefinderandroid.ResponseData;
+package com.example.roberto.thefinderandroid.API;
 
 /**
  * Created by roberto on 7/15/16.
@@ -11,6 +11,6 @@ public class Response {
     }
 
     public interface ResponseCommunicator{
-        public void getResponse(Response r);
+        public void getResponse();
     }
 }

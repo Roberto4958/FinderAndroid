@@ -1,5 +1,6 @@
 package com.example.roberto.thefinderandroid;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,14 +13,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import com.example.roberto.thefinderandroid.Backend.CreateAccountAPICall;
-import com.example.roberto.thefinderandroid.Backend.LogInAPICall;
-import com.example.roberto.thefinderandroid.ResponseData.UserResponse;
+
+import com.example.roberto.thefinderandroid.API.APIcomm;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, UserResponse.UserResponseCommunicator {
-    EditText Username, pass;
-    Button logIn, addAcount;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    private EditText Username, pass;
+    private Button logIn, addAcount;
     private SharedPreferences sharedpreferences;
 
     @Override
@@ -47,12 +47,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String userName = Username.getText().toString();
             String password = pass.getText().toString();
 
+            if(userName.length()<1 || password.length()<1){
+                Toast.makeText(getBaseContext(), "Please fill in the form", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if(userName.contains(" ")|| password.contains(" ")){
+                Toast.makeText(getBaseContext(), "Please dont use spaces", Toast.LENGTH_SHORT).show();
+                return;
+            }
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 
             if (networkInfo != null && networkInfo.isConnected()) {
-                LogInAPICall call = new LogInAPICall(this);
+
+                Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
+                APIcomm call = new APIcomm(this);
                 call.logIn(userName, password);
+                startActivity(intent);
             }
             else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
         }
@@ -60,23 +71,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(".CreateAccount");
             startActivity(intent);
         }
-    }
-
-    @Override
-    public void getUserResponse(UserResponse r) {
-        if(r.status.equals("OK")) {
-            com.example.roberto.thefinderandroid.DataModel.User user = r.results;
-            if(user == null) Toast.makeText(getBaseContext(), "Wrong user name or password", Toast.LENGTH_SHORT).show();
-            else {
-                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putInt("UserID", user.ID);
-                editor.putString("AuthToken", user.authToken);
-                editor.commit();
-                Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
-                startActivity(intent);
-            }
-        }
-        else Toast.makeText(getBaseContext(), "Servers are down", Toast.LENGTH_SHORT).show();
     }
 }

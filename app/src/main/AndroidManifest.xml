@@ -62,6 +62,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".LoadScrean">
+            <intent-filter>
+                <action android:name="com.example.roberto.thefinderandroid.LoadScrean" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

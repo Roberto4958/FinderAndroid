@@ -21,18 +21,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.roberto.thefinderandroid.Backend.AddLocationAPICall;
-import com.example.roberto.thefinderandroid.Backend.FindLocationAPICall;
-import com.example.roberto.thefinderandroid.Backend.LogOutAPICall;
+import com.example.roberto.thefinderandroid.API.APIcomm;
+import com.example.roberto.thefinderandroid.API.Response;
+import com.example.roberto.thefinderandroid.API.UserResponse;
 import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
-import com.example.roberto.thefinderandroid.ResponseData.LocationResponse;
-import com.example.roberto.thefinderandroid.ResponseData.Response;
 import com.google.gson.Gson;
 
-public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, Response.ResponseCommunicator,  LocationResponse.LocationResponseCommunicator {
+
+public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, Response.ResponseCommunicator{
 
     private SharedPreferences sharedpreferences;
     private Button findLocation;
@@ -45,42 +45,42 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     private FragmentManager manager;
     private int userID;
     private String auth;
+    private com.example.roberto.thefinderandroid.DataModel.Location tempLocation;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        findLocation = (Button) findViewById(R.id.findLastLocation);
+        findLocation.setVisibility(View.INVISIBLE);
         locationMangaer = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         progress = (TextView)findViewById(R.id.progress);
         manager = getFragmentManager();
         diologe = new StoreLocationDiologe();
-        findLocation = (Button) findViewById(R.id.findLastLocation);
-        findLocation.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
+        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        userID = sharedpreferences.getInt("UserID", -1);
+        auth = sharedpreferences.getString("AuthToken", null);
+        if(userID == -1){
+            Toast.makeText(getBaseContext(), "Please try again in 5 seconds", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
         if(item.getItemId() == R.id.logOut){
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
-
-                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-                int userID = sharedpreferences.getInt("UserID", -1);
-                String auth = sharedpreferences.getString("AuthToken", null);
-                LogOutAPICall call = new LogOutAPICall(this);
+                APIcomm call = new APIcomm(this);
                 call.logOut(userID, auth);
-                sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
-                sharedpreferences.edit().clear().commit();
-                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-                sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
             }
             else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
             return true;
@@ -97,22 +97,31 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
     public void onHistoryclick(View v) {
 
-        Intent intent = new Intent("com.example.roberto.thefinderandroid.History");
-        startActivity(intent);
-
-        findLocation.setVisibility(View.INVISIBLE);
-        progress.setText("");
-    }
-
-    public void onFindLocationclick(View v) {
-
+        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        userID = sharedpreferences.getInt("UserID", -1);
+        auth = sharedpreferences.getString("AuthToken", null);
+        if(userID == -1){
+            Toast.makeText(getBaseContext(), "Please try again in 5 seconds", Toast.LENGTH_SHORT).show();
+            return;
+        }
         ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            FindLocationAPICall call = new FindLocationAPICall(this);
-            call.findLastLocation(userID, auth);
+            Intent intent = new Intent("com.example.roberto.thefinderandroid.History");
+            startActivity(intent);
+            findLocation.setVisibility(View.INVISIBLE);
+            progress.setText("");
         }
         else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
+    }
+
+    public void onFindLocationclick(View v) {
+        progress.setText("");
+        findLocation.setVisibility(View.INVISIBLE);
+        Gson gson = new Gson();
+        String loc = gson.toJson(tempLocation);
+        Intent intent =  new Intent(User.this, MapsActivity.class).putExtra("Location", loc);
+        startActivity(intent);
     }
 
     public void onAddLocationClick(View view) {
@@ -175,66 +184,31 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         userID = sharedpreferences.getInt("UserID", -1);
         auth = sharedpreferences.getString("AuthToken", null);
 
+        if(userID == -1) {
+            progress.setText("Please try again");
+            return;
+        }
         ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            AddLocationAPICall call = new AddLocationAPICall(this);
+            APIcomm call = new APIcomm(this);
             call.addLocation(userID, loc.getLatitude(), loc.getLongitude(), userLocation, auth);
         }
         else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
+
+        tempLocation = new com.example.roberto.thefinderandroid.DataModel.Location(userLocation, loc.getLatitude(), loc.getLongitude(), -1);
     }
 
     @Override
-    public void getResponse(Response r) {
-        if(r.status.equals("OK")){
-            progress.setText("Success");
-            progress.setTextColor(Color.GREEN);
-            findLocation.setVisibility(View.VISIBLE);
-        }
-        else if(r.status.equals("TOKENCLEARED")){
-            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
-            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        }
-        else{
-            progress.setText("");
-            Toast.makeText(getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void getLocationResponse(LocationResponse r) {
-
-        findLocation.setVisibility(View.INVISIBLE);
-        progress.setText("");
-
-        if(r.status.equals("OK")) {
-            Gson gson = new Gson();
-            String loc = gson.toJson(r.result);
-            Intent intent = new Intent(User.this, MapsActivity.class).putExtra("Location", loc);
-            startActivity(intent);
-        }
-        else if(r.status.equals("TOKENCLEARED")){
-            sharedpreferences = getSharedPreferences("CurrentLocation", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
-            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-            sharedpreferences.edit().clear().commit();
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        }
-        else Toast.makeText(getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
+    public void getResponse() {
+        progress.setText("Success");
+        progress.setTextColor(Color.GREEN);
+        findLocation.setVisibility(View.VISIBLE);
     }
 
     private class MyLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location loc) {
-
-            //Toast.makeText(getBaseContext(), " Lat: " + loc.getLatitude() + "\n Lng: " + loc.getLongitude(), Toast.LENGTH_SHORT).show();
             StopLocationTracker();
             storeLocation(loc);
         }

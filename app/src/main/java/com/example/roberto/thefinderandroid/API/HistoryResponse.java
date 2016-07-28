@@ -1,4 +1,4 @@
-package com.example.roberto.thefinderandroid.ResponseData;
+package com.example.roberto.thefinderandroid.API;
 
 import com.example.roberto.thefinderandroid.DataModel.Location;
 import java.util.ArrayList;
@@ -8,14 +8,13 @@ import java.util.ArrayList;
  */
 public class HistoryResponse extends Response{
 
-    public ArrayList<Location> result;
+    public ArrayList<Location> UserLocations;
 
     public HistoryResponse(ArrayList<Location> l, String s){
-
         super(s);
-        result = l;
+        UserLocations = l;
     }
     public interface HistoryResponseCommunicator{
-        public void getHistoryResponse(HistoryResponse r);
+        public void getHistoryResponse(ArrayList<Location> r);
     }
 }

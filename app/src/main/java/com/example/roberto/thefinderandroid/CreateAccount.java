@@ -8,15 +8,15 @@ import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import com.example.roberto.thefinderandroid.Backend.CreateAccountAPICall;
-import com.example.roberto.thefinderandroid.ResponseData.UserResponse;
 
-public class CreateAccount extends AppCompatActivity implements View.OnClickListener, UserResponse.UserResponseCommunicator {
+import com.example.roberto.thefinderandroid.API.APIcomm;
+import com.example.roberto.thefinderandroid.API.UserResponse;
+
+public class CreateAccount extends AppCompatActivity implements View.OnClickListener {
 
     private Button signUp;
     private EditText user, pass, firstName, lastName;
@@ -48,28 +48,16 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
 
-                CreateAccountAPICall call = new CreateAccountAPICall(this);
-                call.MakeAccount(userName, password, FName, LName);
+                Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
+                APIcomm call = new APIcomm(this);
+                call.createAccount(userName, password, FName, LName);
+                startActivity(intent);
+
             }
             else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
         }
         else Toast.makeText(getBaseContext(), "Please fill out the form", Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public void getUserResponse(UserResponse r) {
 
-        if(r.status.equals("OK")) {
-            com.example.roberto.thefinderandroid.DataModel.User user = r.results;
-            sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedpreferences.edit();
-            editor.putInt("UserID", user.ID);
-            editor.putString("AuthToken", user.authToken);
-            editor.commit();
-
-            Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
-            startActivity(intent);
-        }
-        else Toast.makeText(getBaseContext(), "Sorry Servers are down", Toast.LENGTH_SHORT).show();
-    }
 }

@@ -1,4 +1,4 @@
-package com.example.roberto.thefinderandroid.ResponseData;
+package com.example.roberto.thefinderandroid.API;
 
 import com.example.roberto.thefinderandroid.DataModel.Location;
 
@@ -6,15 +6,15 @@ import com.example.roberto.thefinderandroid.DataModel.Location;
  * Created by roberto on 7/15/16.
  */
 public class LocationResponse extends Response{
-    public Location result;
+    public Location locationInfo;
 
     public LocationResponse(Location l, String s){
 
         super(s);
-        result = l;
+        locationInfo = l;
     }
 
     public interface LocationResponseCommunicator{
-        public void getLocationResponse(LocationResponse r);
+        public void getLocationResponse(Location r);
     }
 }
