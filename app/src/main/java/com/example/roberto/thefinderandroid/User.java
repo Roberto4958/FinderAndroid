@@ -26,16 +26,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.roberto.thefinderandroid.API.APIcomm;
+import com.example.roberto.thefinderandroid.API.LocationResponse;
 import com.example.roberto.thefinderandroid.API.Response;
-import com.example.roberto.thefinderandroid.API.UserResponse;
 import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
 import com.google.gson.Gson;
 
 
-public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, Response.ResponseCommunicator{
+public class User extends AppCompatActivity implements StoreLocationDiologe.Communicator, Response.ResponseCommunicator, LocationResponse.LocationResponseCommunicator{
 
     private SharedPreferences sharedpreferences;
-    private Button findLocation;
+    private Button findLocation, addLocation, history;
     private TextView progress;
     private StoreLocationDiologe diologe;
     private String userLocation;
@@ -45,7 +45,7 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     private FragmentManager manager;
     private int userID;
     private String auth;
-    private com.example.roberto.thefinderandroid.DataModel.Location tempLocation;
+    private ProgressBar progressBar;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -56,12 +56,24 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        addLocation = (Button)findViewById(R.id.addLocation);
+        history = (Button) findViewById(R.id.history);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
         findLocation = (Button) findViewById(R.id.findLastLocation);
         findLocation.setVisibility(View.INVISIBLE);
         locationMangaer = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         progress = (TextView)findViewById(R.id.progress);
         manager = getFragmentManager();
         diologe = new StoreLocationDiologe();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        addLocation.setVisibility(View.VISIBLE);
+        history.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -116,12 +128,28 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
     }
 
     public void onFindLocationclick(View v) {
-        progress.setText("");
+
+        sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        userID = sharedpreferences.getInt("UserID", -1);
+        auth = sharedpreferences.getString("AuthToken", null);
+
+        ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            APIcomm call = new APIcomm(this);
+            call.findLocation(userID, auth);
+        }
+        else{
+            Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        addLocation.setVisibility(View.INVISIBLE);
+        history.setVisibility(View.INVISIBLE);
         findLocation.setVisibility(View.INVISIBLE);
-        Gson gson = new Gson();
-        String loc = gson.toJson(tempLocation);
-        Intent intent =  new Intent(User.this, MapsActivity.class).putExtra("Location", loc);
-        startActivity(intent);
+        progressBar.setVisibility(View.VISIBLE);
+        progress.setText("");
+
     }
 
     public void onAddLocationClick(View view) {
@@ -183,7 +211,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
         userID = sharedpreferences.getInt("UserID", -1);
         auth = sharedpreferences.getString("AuthToken", null);
-
         if(userID == -1) {
             progress.setText("Please try again");
             return;
@@ -195,8 +222,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
             call.addLocation(userID, loc.getLatitude(), loc.getLongitude(), userLocation, auth);
         }
         else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
-
-        tempLocation = new com.example.roberto.thefinderandroid.DataModel.Location(userLocation, loc.getLatitude(), loc.getLongitude(), -1);
     }
 
     @Override
@@ -204,6 +229,15 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         progress.setText("Success");
         progress.setTextColor(Color.GREEN);
         findLocation.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void getLocationResponse(com.example.roberto.thefinderandroid.DataModel.Location r) {
+        r.place = r.place.replace("@20", " ");
+        Gson gson = new Gson();
+        String loc = gson.toJson(r);
+        Intent intent =  new Intent(User.this, MapsActivity.class).putExtra("Location", loc);
+        startActivity(intent);
     }
 
     private class MyLocationListener implements LocationListener {

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 import com.example.roberto.thefinderandroid.DataModel.Location;
 import com.example.roberto.thefinderandroid.R;
@@ -24,6 +25,7 @@ public class CustomAdapter extends ArrayAdapter<Location> {
         LayoutInflater b = LayoutInflater.from(getContext());
         View CustumView = b.inflate(R.layout.custom_row, parent, false);
         String place = getItem(i).place;
+        place= place.replace("@20", " ");
         TextView tView = (TextView) CustumView.findViewById(R.id.textView);
         tView.setText(place);
         return CustumView;

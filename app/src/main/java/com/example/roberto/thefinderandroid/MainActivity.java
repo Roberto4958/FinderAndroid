@@ -1,6 +1,5 @@
 package com.example.roberto.thefinderandroid;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,13 +18,13 @@ import com.example.roberto.thefinderandroid.API.APIcomm;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private EditText Username, pass;
-    private Button logIn, addAcount;
+    private Button logIn, addAccount;
     private SharedPreferences sharedpreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
-        String user = sharedpreferences.getString("UserName", "");
+        String user = sharedpreferences.getString("AuthToken", "");
         if(user.length()>0){
             Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
             startActivity(intent);
@@ -36,9 +35,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Username = (EditText)findViewById(R.id.userName);
         pass = (EditText)findViewById(R.id.password);
         logIn = (Button) findViewById(R.id.logIn);
-        addAcount = (Button) findViewById(R.id.addAcount);
+        addAccount = (Button) findViewById(R.id.addAcount);
         logIn.setOnClickListener(this);
-        addAcount.setOnClickListener(this);
+        addAccount.setOnClickListener(this);
     }
 
     @Override
@@ -57,9 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
             if (networkInfo != null && networkInfo.isConnected()) {
-
                 Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
                 APIcomm call = new APIcomm(this);
                 call.logIn(userName, password);

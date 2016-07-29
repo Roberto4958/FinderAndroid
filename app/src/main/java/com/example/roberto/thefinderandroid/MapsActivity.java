@@ -26,8 +26,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
-
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -39,18 +37,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
         String l = getIntent().getStringExtra("Location");
         Gson gson =  new Gson();
         location = gson.fromJson(l, Location.class);
         mMap = googleMap;
-
         final LatLng loc = new LatLng(location.latitude,location.longtitude);
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.addMarker(new MarkerOptions().position(loc).title(location.place));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
-
     }
 
 }

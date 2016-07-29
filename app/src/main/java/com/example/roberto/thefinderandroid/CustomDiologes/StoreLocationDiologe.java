@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
 import com.example.roberto.thefinderandroid.R;
 
 
@@ -52,11 +54,14 @@ public class StoreLocationDiologe extends DialogFragment implements View.OnClick
     public void onClick(View view) {
         String location = place.getText().toString();
 
-        if(location.length()>0){
+        if(location.contains("@20")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use @20", Toast.LENGTH_SHORT).show();
+        }
+        else if(location.length()>0){
+            location = location.replace(" ", "@20");
             communicator.onDiologMessege(location);
             place.setText("");
             dismiss();
-
         }
     }
     public interface Communicator{

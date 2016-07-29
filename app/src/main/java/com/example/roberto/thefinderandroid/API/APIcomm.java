@@ -9,9 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.roberto.thefinderandroid.CreateAccount;
-import com.example.roberto.thefinderandroid.DataModel.User;
 import com.example.roberto.thefinderandroid.MainActivity;
-import com.example.roberto.thefinderandroid.MapsActivity;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -205,6 +203,13 @@ public class APIcomm extends AsyncTask<String, Void, String> {
 
             if (r.status.equals("OK"))
             {
+                if(r.userInfo == null){
+                    Intent intent = new Intent(activity, CreateAccount.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    activity.startActivity(intent);
+                    Toast.makeText(activity.getBaseContext(), "Sorry that user name is already taken", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putInt("UserID", r.userInfo.ID);
@@ -333,6 +338,31 @@ public class APIcomm extends AsyncTask<String, Void, String> {
                 activity.startActivity(intent);
             }
         }
-
+        else if(currentRequest.equals("findLocation")){
+            LocationResponse r = g.fromJson(response, LocationResponse.class);
+            if(r.status.equals("OK")){
+                LocationCommunicator = (LocationResponse.LocationResponseCommunicator) activity;
+                LocationCommunicator.getLocationResponse(r.locationInfo);
+            }
+            else if(r.status.equals("TOKENCLEARED")){
+                SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
+                sharedpreferences.edit().clear().commit();
+                Intent intent = new Intent(activity, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                activity.startActivity(intent);
+            }
+            else if (r.status.equals("ERROR"))
+            {
+                Toast.makeText(activity.getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
+                sharedpreferences.edit().clear().commit();
+                Intent intent = new Intent(activity, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                activity.startActivity(intent);
+            }
+        }
     }
 }
