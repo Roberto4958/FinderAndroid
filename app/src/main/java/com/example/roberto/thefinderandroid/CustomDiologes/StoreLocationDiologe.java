@@ -54,11 +54,7 @@ public class StoreLocationDiologe extends DialogFragment implements View.OnClick
     public void onClick(View view) {
         String location = place.getText().toString();
 
-        if(location.contains("@20")){
-            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use @20", Toast.LENGTH_SHORT).show();
-        }
-        else if(location.length()>0){
-            location = location.replace(" ", "@20");
+        if(location.length()>0){
             communicator.onDiologMessege(location);
             place.setText("");
             dismiss();

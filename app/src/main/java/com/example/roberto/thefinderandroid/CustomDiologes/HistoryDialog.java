@@ -58,7 +58,6 @@ public class HistoryDialog extends DialogFragment implements View.OnClickListene
 
     public void onCreate(com.example.roberto.thefinderandroid.DataModel.Location location, Activity a) {
         Location = location;
-        Location.place = Location.place.replace("@20", " ");
         activity = a;
     }
 

@@ -14,10 +14,12 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,25 +43,48 @@ public class APIcomm extends AsyncTask<String, Void, String> {
     }
 
     public void logIn(String userName, String password){
-        String URL = baseURL + "/logIn/"+userName+"/"+password;
-        RequestType = "POST";
-        currentRequest = "logIn";
-        execute(URL);
+        try {
+            userName = URLEncoder.encode(userName.toString(),"UTF-8");
+            password = URLEncoder.encode(password.toString(),"UTF-8");
+            String URL = baseURL + "/logIn/"+userName+"/"+password;
+            RequestType = "POST";
+            currentRequest = "logIn";
+            execute(URL);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     public void createAccount(String userName, String password, String firstName, String lastName){
 
-        String URL = baseURL+"/createAccount/"+userName+"/"+password+"/"+firstName+"/"+lastName;
-        RequestType = "PUT";
-        currentRequest = "createAccount";
-        execute(URL);
+        try {
+            userName = URLEncoder.encode(userName.toString(),"UTF-8");
+            password = URLEncoder.encode(password.toString(),"UTF-8");
+            firstName = URLEncoder.encode(firstName.toString(),"UTF-8");
+            lastName = URLEncoder.encode(lastName.toString(),"UTF-8");
+
+            String URL = baseURL+"/createAccount/"+userName+"/"+password+"/"+firstName+"/"+lastName;
+            RequestType = "PUT";
+            currentRequest = "createAccount";
+            execute(URL);
+        } catch (UnsupportedEncodingException e) {
+            Toast.makeText(activity.getBaseContext(), "Please try adding different input", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
     public void addLocation(int userID, double latitude, double longitude, String place, String auth){
-        String URL = baseURL+"/addNewLocation/"+place+"/"+latitude+"/"+longitude+"/"+userID+"/"+auth;
-        RequestType = "PUT";
-        currentRequest = "addLocation";
-        execute(URL);
+        try {
+            place = URLEncoder.encode(place.toString(),"UTF-8");
+            String URL = baseURL+"/addNewLocation/"+place+"/"+latitude+"/"+longitude+"/"+userID+"/"+auth;
+            RequestType = "PUT";
+            currentRequest = "addLocation";
+            execute(URL);
+        } catch (UnsupportedEncodingException e) {
+            Toast.makeText(activity.getBaseContext(), "Please try a different name", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -101,6 +126,7 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         InputStream is = null;
 
         try {
+            Log.v("url", myurl);
             URL url = new URL(myurl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);
@@ -158,12 +184,14 @@ public class APIcomm extends AsyncTask<String, Void, String> {
 
         ErrorResponse error = g.fromJson(response, ErrorResponse.class);
         if(error.errorType != null){
+            Log.v("errorType", error.errorType);
             SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
             Intent intent = new Intent(activity, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             activity.startActivity(intent);
             Toast.makeText(activity.getBaseContext(), "Error", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         if(currentRequest.equals("logIn")){
@@ -231,6 +259,7 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             }
         }
         else if(currentRequest.equals("addLocation")){
+            Log.v("Response in addLocation", response);
             Response r = g.fromJson(response, Response.class);
             if (r.status.equals("OK"))
             {

@@ -233,7 +233,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
 
     @Override
     public void getLocationResponse(com.example.roberto.thefinderandroid.DataModel.Location r) {
-        r.place = r.place.replace("@20", " ");
         Gson gson = new Gson();
         String loc = gson.toJson(r);
         Intent intent =  new Intent(User.this, MapsActivity.class).putExtra("Location", loc);
