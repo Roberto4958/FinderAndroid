@@ -338,35 +338,6 @@ public class APIcomm extends AsyncTask<String, Void, String> {
                 activity.startActivity(intent);
             }
         }
-        else if(currentRequest.equals("logOut")){
-            Response r = g.fromJson(response, Response.class);
-            if(r.status.equals("OK")){
-                SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
-                sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                activity.startActivity(intent);
-            }
-            else if(r.status.equals("TOKENCLEARED")){
-                SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
-                sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                activity.startActivity(intent);
-            }
-            else if (r.status.equals("ERROR"))
-            {
-                Toast.makeText(activity.getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
-                sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                activity.startActivity(intent);
-            }
-        }
         else if(currentRequest.equals("findLocation")){
             LocationResponse r = g.fromJson(response, LocationResponse.class);
             if(r.status.equals("OK")){

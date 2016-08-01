@@ -3,6 +3,7 @@ package com.example.roberto.thefinderandroid;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
@@ -60,6 +61,7 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
         inflater.inflate(R.menu.menu, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -76,6 +78,12 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
             if (networkInfo != null && networkInfo.isConnected()) {
                 APIcomm call = new APIcomm(this);
                 call.logOut(userID, auth);
+
+                sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+                sharedpreferences.edit().clear().commit();
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
             else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
 
