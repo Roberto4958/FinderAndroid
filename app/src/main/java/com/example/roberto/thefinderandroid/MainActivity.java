@@ -50,10 +50,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(getBaseContext(), "Please fill in the form", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if(userName.contains(" ")|| password.contains(" ")){
-                Toast.makeText(getBaseContext(), "Please dont use spaces", Toast.LENGTH_SHORT).show();
+
+            if(userName.contains("/")|| password.contains("/") ){
+                Toast.makeText(getBaseContext(), "Please dont use /", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            else if(userName.contains("&")|| password.contains("&")){
+                Toast.makeText(getBaseContext(), "Please dont use &", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {

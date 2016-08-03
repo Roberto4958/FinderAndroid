@@ -20,7 +20,6 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
 
     private Button signUp;
     private EditText user, pass, firstName, lastName;
-    private SharedPreferences sharedpreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +40,15 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
         String password= pass.getText().toString();
         String FName= firstName.getText().toString();
         String LName= lastName.getText().toString();
-        if(userName.contains(" ") || password.contains(" ")|| FName.contains(" ") || LName.contains(" ")) Toast.makeText(getBaseContext(), "Please do not use spaces", Toast.LENGTH_SHORT).show();
+
+        if(userName.contains("/") || password.contains("/")|| FName.contains("/") || LName.contains("/")){
+            Toast.makeText(getBaseContext(), "Please do not use /", Toast.LENGTH_SHORT).show();
+        }
+
+        else if(userName.contains("&") || password.contains("&")|| FName.contains("&") || LName.contains("&")){
+            Toast.makeText(getBaseContext(), "Please do not use &", Toast.LENGTH_SHORT).show();
+        }
+
         else if(userName.length()>0 && password.length()>0 && FName.length()>0 && LName.length()>0) {
 
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);

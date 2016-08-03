@@ -71,8 +71,13 @@ public class StoreLocationDiologe extends DialogFragment implements View.OnClick
     @Override
     public void onClick(View view) {
         String location = place.getText().toString();
-
-        if(location.length()>0){
+        if(location.contains("/")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use /", Toast.LENGTH_SHORT).show();
+        }
+        else if(location.contains("&")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use &", Toast.LENGTH_SHORT).show();
+        }
+        else if(location.length()>0){
             place.setText("");
             dismiss();
             userLocation = location;
