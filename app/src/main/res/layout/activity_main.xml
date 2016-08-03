@@ -20,7 +20,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:background="#ffffff"
-        android:hint="User Name"
+        android:hint="@string/userName"
         android:paddingLeft="10dp" />
 
     <EditText
@@ -33,13 +33,13 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:background="#ffffff"
-        android:hint="Password"
+        android:hint="@string/password"
         android:paddingLeft="10dp" />
 
     <Button
         android:layout_width="300dp"
         android:layout_height="60dp"
-        android:text="Log In"
+        android:text="@string/logIn"
         android:id="@+id/logIn"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
@@ -53,7 +53,7 @@
     <Button
         android:layout_width="300dp"
         android:layout_height="60dp"
-        android:text="Create account"
+        android:text="@string/createAccount"
         android:id="@+id/addAcount"
         android:layout_below="@+id/logIn"
         android:layout_centerHorizontal="true"

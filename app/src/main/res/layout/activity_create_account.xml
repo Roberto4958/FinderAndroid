@@ -19,7 +19,7 @@
         android:layout_centerHorizontal="true"
         android:background="#ffffff"
         android:layout_marginTop="20dp"
-        android:hint="User Name"
+        android:hint="@string/userName"
         android:paddingLeft="10dp" />
 
     <EditText
@@ -33,7 +33,7 @@
         android:layout_alignLeft="@+id/userName"
         android:background="#ffffff"
         android:layout_marginTop="20dp"
-        android:hint="Password"
+        android:hint="@string/password"
         android:paddingLeft="10dp" />
 
     <EditText
@@ -47,7 +47,7 @@
         android:layout_alignLeft="@+id/password"
         android:layout_marginTop="20dp"
         android:background="#ffffff"
-        android:hint="First Name"
+        android:hint="@string/firstName"
         android:paddingLeft="10dp" />
 
     <EditText
@@ -60,14 +60,14 @@
         android:layout_centerHorizontal="true"
         android:background="#ffffff"
         android:layout_marginTop="20dp"
-        android:hint="Last Name"
+        android:hint="@string/lastName"
         android:paddingLeft="10dp"
         android:layout_below="@+id/firstName" />
 
     <Button
         android:layout_width="300dp"
         android:layout_height="60dp"
-        android:text="Sign Up"
+        android:text="@string/signUp"
         android:id="@+id/signUp"
         android:layout_marginTop="20dp"
         android:layout_below="@+id/lastName"

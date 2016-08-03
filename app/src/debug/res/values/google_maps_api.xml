@@ -9,6 +9,9 @@
     You can also add your credentials to an existing key, using this line:
     4D:61:B6:71:3D:81:C0:FF:D0:7E:63:84:6B:A5:FE:1D:66:B7:E9:73;com.example.roberto.thefinderandroid
 
+    7A:17:FF:6B:AB:AC:3E:DF:9D:8A:8D:54:05:BA:2D:AE:C8:2F:4C:8B;
+
+
     Alternatively, follow the directions here:
     https://developers.google.com/maps/documentation/android/start#get-key
 
@@ -16,6 +19,6 @@
     string in this file.
     -->
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
-            
+
     </string>
 </resources>

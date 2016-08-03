@@ -1,4 +1,18 @@
 <resources>
     <string name="app_name">TheFinderAndroid</string>
     <string name="title_activity_maps">Map</string>
+    <string name="logIn">Log In</string>string>
+    <string name="createAccount">Create Account</string>string>
+    <string name="userName">User Name</string>string>
+    <string name="password">Password</string>string>
+    <string name="firstName">First Name</string>string>
+    <string name="lastName">Last Name</string>string>
+    <string name="signUp">Sign up</string>string>
+    <string name="findLocation">Find Last Location</string>
+    <string name="history">History</string>
+    <string name="addLocation">Add This Location</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="map">Map</string>
+
 </resources>
