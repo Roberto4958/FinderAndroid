@@ -5,10 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.example.roberto.thefinderandroid.CreateAccount;
+import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
 import com.example.roberto.thefinderandroid.MainActivity;
 import com.google.gson.Gson;
 
@@ -97,7 +97,6 @@ public class APIcomm extends AsyncTask<String, Void, String> {
 
     public void deleteLocation(int userID, int locationID, String auth){
         String URL = baseURL+"/deleteLocation/"+userID+"/"+locationID+"/"+auth;
-        Log.v("deleteURL", URL);
         RequestType = "DELETE";
         currentRequest = "deleteLocation";
         execute(URL);
@@ -126,7 +125,6 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         InputStream is = null;
 
         try {
-            Log.v("url", myurl);
             URL url = new URL(myurl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);
@@ -184,7 +182,6 @@ public class APIcomm extends AsyncTask<String, Void, String> {
 
         ErrorResponse error = g.fromJson(response, ErrorResponse.class);
         if(error.errorType != null){
-            Log.v("errorType", error.errorType);
             SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
             Intent intent = new Intent(activity, MainActivity.class);
@@ -259,7 +256,6 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             }
         }
         else if(currentRequest.equals("addLocation")){
-            Log.v("Response in addLocation", response);
             Response r = g.fromJson(response, Response.class);
             if (r.status.equals("OK"))
             {
@@ -275,6 +271,7 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             }
             else if (r.status.equals("ERROR"))
             {
+                ((StoreLocationDiologe.Communicator)activity).onDiologMessege("error");
                 Toast.makeText(activity.getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
             }
             else

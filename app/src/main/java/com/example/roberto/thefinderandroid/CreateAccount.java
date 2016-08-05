@@ -34,6 +34,31 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
         signUp.setOnClickListener(this);
     }
 
+    public boolean checkIfValid(String word){
+
+        if(word.contains("/")){
+            Toast.makeText(getBaseContext(), "Please do not use /", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("&")){
+            Toast.makeText(getBaseContext(), "Please do not use &", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("\"")){
+            Toast.makeText(getBaseContext(), "Please do not use \"", Toast.LENGTH_SHORT).show();
+            return false;
+        }else if(word.contains(";")){
+            Toast.makeText(getBaseContext(), "Please do not use ;", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("%")){
+            Toast.makeText(getBaseContext(), "Please do not use %", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public void onClick(View view) {
         String userName= user.getText().toString();
@@ -41,12 +66,11 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
         String FName= firstName.getText().toString();
         String LName= lastName.getText().toString();
 
-        if(userName.contains("/") || password.contains("/")|| FName.contains("/") || LName.contains("/")){
-            Toast.makeText(getBaseContext(), "Please do not use /", Toast.LENGTH_SHORT).show();
+        if(userName.length()>100 || password.length()>100||FName.length()>100|| LName.length()>100){
+            Toast.makeText(getBaseContext(), "Please do not use more than 100 characters", Toast.LENGTH_SHORT).show();
         }
-
-        else if(userName.contains("&") || password.contains("&")|| FName.contains("&") || LName.contains("&")){
-            Toast.makeText(getBaseContext(), "Please do not use &", Toast.LENGTH_SHORT).show();
+        else if(!(checkIfValid(userName) && checkIfValid(password) && checkIfValid(FName) && checkIfValid(LName))){
+            return;
         }
 
         else if(userName.length()>0 && password.length()>0 && FName.length()>0 && LName.length()>0) {

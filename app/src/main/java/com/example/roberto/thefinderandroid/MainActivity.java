@@ -1,5 +1,6 @@
 package com.example.roberto.thefinderandroid;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -40,6 +41,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addAccount.setOnClickListener(this);
     }
 
+    public boolean checkIfValid(String word){
+
+        if(word.contains("/")){
+            Toast.makeText(getBaseContext(), "Please do not use /", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("&")){
+            Toast.makeText(getBaseContext(), "Please do not use &", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("\"")){
+            Toast.makeText(getBaseContext(), "Please do not use \"", Toast.LENGTH_SHORT).show();
+            return false;
+        }else if(word.contains(";")){
+            Toast.makeText(getBaseContext(), "Please do not use ;", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("%")){
+            Toast.makeText(getBaseContext(), "Please do not use %", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
     @Override
     public void onClick(View view) {
         if(view.getId() == R.id.logIn){
@@ -51,13 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return;
             }
 
-            if(userName.contains("/")|| password.contains("/") ){
-                Toast.makeText(getBaseContext(), "Please dont use /", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            else if(userName.contains("&")|| password.contains("&")){
-                Toast.makeText(getBaseContext(), "Please dont use &", Toast.LENGTH_SHORT).show();
+            if(!(checkIfValid(userName) && checkIfValid(password)) ){
                 return;
             }
 

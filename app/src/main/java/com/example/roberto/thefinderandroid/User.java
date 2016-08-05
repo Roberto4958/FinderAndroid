@@ -153,6 +153,15 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
             progressTextView.setText("Please move your device");
             progressTextView.setTextColor(Color.RED);
         }
+        else if(progress.equals("Not Connected")){
+            progressTextView.setText("");
+        }
+        else if(progress.equals("No permisson")){
+            progressTextView.setText("");
+        }
+        else if(progress.equals("error")){
+            progressTextView.setText("");
+        }
         else if(progress.equals("try again")){
             progressTextView.setText("Please try again");
         }
