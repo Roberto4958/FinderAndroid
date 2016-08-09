@@ -11,27 +11,38 @@ import android.content.SharedPreferences;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.roberto.thefinderandroid.API.APIcomm;
 import com.example.roberto.thefinderandroid.API.UserResponse;
+import com.example.roberto.thefinderandroid.DataModel.*;
+import com.example.roberto.thefinderandroid.DataModel.User;
 
-public class CreateAccount extends AppCompatActivity implements View.OnClickListener {
+public class CreateAccount extends AppCompatActivity implements View.OnClickListener, UserResponse.UserResponseCommunicator {
 
     private Button signUp;
     private EditText user, pass, firstName, lastName;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_account);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        progressBar = (ProgressBar)findViewById(R.id.progressBar);
         user = (EditText) findViewById(R.id.userName);
         pass = (EditText) findViewById(R.id.password);
         firstName = (EditText) findViewById(R.id.firstName);
         lastName = (EditText) findViewById(R.id.lastName);
         signUp = (Button) findViewById(R.id.signUp);
         signUp.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     public boolean checkIfValid(String word){
@@ -53,6 +64,34 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
         }
         else if(word.contains("%")){
             Toast.makeText(getBaseContext(), "Please do not use %", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("√")){
+            Toast.makeText(getBaseContext(), "Please do not use √", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("π")){
+            Toast.makeText(getBaseContext(), "Please do not use π", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("∆")){
+            Toast.makeText(getBaseContext(), "Please do not use ∆", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("≤")){
+            Toast.makeText(getBaseContext(), "Please do not use ≤", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("≥")){
+            Toast.makeText(getBaseContext(), "Please do not use ≥", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("≠")){
+            Toast.makeText(getBaseContext(), "Please do not use ≠", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("℅")){
+            Toast.makeText(getBaseContext(), "Please do not use ℅", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -78,12 +117,9 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
-
-                Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
+                progressBar.setVisibility(View.VISIBLE);
                 APIcomm call = new APIcomm(this);
                 call.createAccount(userName, password, FName, LName);
-                startActivity(intent);
-
             }
             else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
         }
@@ -91,4 +127,19 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
     }
 
 
+    @Override
+    public void getUserResponse(User r) {
+        progressBar.setVisibility(View.INVISIBLE);
+        if(r == null){
+            Toast.makeText(getBaseContext(), "Sorry that user name is already taken", Toast.LENGTH_LONG).show();
+            return;
+        }
+        SharedPreferences sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putInt("UserID", r.ID);
+        editor.putString("AuthToken", r.authToken);
+        editor.commit();
+        Intent intent = new Intent("com.example.roberto.thefinderandroid.User");
+        startActivity(intent);
+    }
 }

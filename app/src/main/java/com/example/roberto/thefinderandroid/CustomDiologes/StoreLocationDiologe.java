@@ -92,15 +92,43 @@ public class StoreLocationDiologe extends DialogFragment implements View.OnClick
             return false;
         }
 
+        else if(word.contains("√")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use √", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("π")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use π", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("∆")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use ∆", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("≤")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use ≤", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("≥")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use ≥", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("≠")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use ≠", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        else if(word.contains("℅")){
+            Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use ℅", Toast.LENGTH_SHORT).show();
+            return false;
+        }
         return true;
     }
 
     @Override
     public void onClick(View view) {
         String location = place.getText().toString();
-        if(!checkIfValid(location)){
-            return;
-        }
+
+        if(!checkIfValid(location)) return;
+
         else if(location.length()>40){
             Toast.makeText(((Activity)communicator).getBaseContext(), "Please do not use more than 40 characters", Toast.LENGTH_SHORT).show();
         }
@@ -192,10 +220,7 @@ public class StoreLocationDiologe extends DialogFragment implements View.OnClick
         SharedPreferences sharedpreferences = ((Activity)communicator).getSharedPreferences("User", Context.MODE_PRIVATE);
         int userID = sharedpreferences.getInt("UserID", -1);
         String auth = sharedpreferences.getString("AuthToken", null);
-        if(userID == -1) {
-            communicator.onDiologMessege("try again");
-            return;
-        }
+
         ConnectivityManager connMgr = (ConnectivityManager)((Activity)communicator).getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {

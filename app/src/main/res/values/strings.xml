@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TheFinderAndroid</string>
+    <string name="app_name">The Finder</string>
     <string name="title_activity_maps">Map</string>
     <string name="logIn">Log In</string>string>
     <string name="createAccount">Create Account</string>string>

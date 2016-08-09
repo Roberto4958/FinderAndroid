@@ -67,10 +67,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
         userID = sharedpreferences.getInt("UserID", -1);
         auth = sharedpreferences.getString("AuthToken", null);
-        if(userID == -1){
-            Toast.makeText(getBaseContext(), "Please try again in 5 seconds", Toast.LENGTH_SHORT).show();
-            return true;
-        }
 
         if(item.getItemId() == R.id.logOut){
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -103,10 +99,7 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
         userID = sharedpreferences.getInt("UserID", -1);
         auth = sharedpreferences.getString("AuthToken", null);
-        if(userID == -1){
-            Toast.makeText(getBaseContext(), "Please try again in 5 seconds", Toast.LENGTH_SHORT).show();
-            return;
-        }
+
         ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {

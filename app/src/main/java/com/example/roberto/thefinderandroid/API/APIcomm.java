@@ -194,20 +194,11 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         if(currentRequest.equals("logIn")){
             UserResponse r = g.fromJson(response, UserResponse.class);
 
+            UserCommunicator = (UserResponse.UserResponseCommunicator)activity;
+
             if (r.status.equals("OK"))
             {
-                if(r.userInfo == null){
-                    Intent intent = new Intent(activity, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    activity.startActivity(intent);
-                    Toast.makeText(activity.getBaseContext(), "Wrong user name or password", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putInt("UserID", r.userInfo.ID);
-                editor.putString("AuthToken", r.userInfo.authToken);
-                editor.commit();
+                 UserCommunicator.getUserResponse(r.userInfo);
             }
             else if (r.status.equals("ERROR"))
             {
@@ -225,21 +216,11 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         }
         if(currentRequest.equals("createAccount")){
             UserResponse r = g.fromJson(response, UserResponse.class);
+            UserCommunicator =  (UserResponse.UserResponseCommunicator)activity;
 
             if (r.status.equals("OK"))
             {
-                if(r.userInfo == null){
-                    Intent intent = new Intent(activity, CreateAccount.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    activity.startActivity(intent);
-                    Toast.makeText(activity.getBaseContext(), "Sorry that user name is already taken", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putInt("UserID", r.userInfo.ID);
-                editor.putString("AuthToken", r.userInfo.authToken);
-                editor.commit();
+                UserCommunicator.getUserResponse(r.userInfo);
             }
             else if (r.status.equals("ERROR"))
             {
