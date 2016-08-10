@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import com.example.roberto.thefinderandroid.API.APIcomm;
 import com.example.roberto.thefinderandroid.API.UserResponse;
-import com.example.roberto.thefinderandroid.DataModel.*;
 import com.example.roberto.thefinderandroid.DataModel.User;
 
 public class CreateAccount extends AppCompatActivity implements View.OnClickListener, UserResponse.UserResponseCommunicator {

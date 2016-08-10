@@ -2,8 +2,6 @@ package com.example.roberto.thefinderandroid;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-
-
 import com.example.roberto.thefinderandroid.DataModel.Location;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;

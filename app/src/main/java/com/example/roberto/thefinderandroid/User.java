@@ -59,6 +59,9 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         addLocation.setVisibility(View.VISIBLE);
         history.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
+
+        findLocation.setVisibility(View.INVISIBLE);
+        progressTextView.setText("");
     }
 
     @Override
@@ -105,8 +108,6 @@ public class User extends AppCompatActivity implements StoreLocationDiologe.Comm
         if (networkInfo != null && networkInfo.isConnected()) {
             Intent intent = new Intent("com.example.roberto.thefinderandroid.History");
             startActivity(intent);
-            findLocation.setVisibility(View.INVISIBLE);
-            progressTextView.setText("");
         }
         else Toast.makeText(getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
     }

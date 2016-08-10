@@ -1,6 +1,5 @@
 package com.example.roberto.thefinderandroid;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import com.example.roberto.thefinderandroid.API.APIcomm;
 import com.example.roberto.thefinderandroid.API.UserResponse;
-import com.example.roberto.thefinderandroid.DataModel.*;
 import com.example.roberto.thefinderandroid.DataModel.User;
 
 
