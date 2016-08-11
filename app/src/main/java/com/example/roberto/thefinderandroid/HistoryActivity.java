@@ -20,32 +20,37 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.roberto.thefinderandroid.API.APIcomm;
-import com.example.roberto.thefinderandroid.CustomAdapter.CustomAdapter;
+import com.example.roberto.thefinderandroid.CustomAdapter.HistoryAdapter;
 import com.example.roberto.thefinderandroid.CustomDiologes.HistoryDialog;
 import com.example.roberto.thefinderandroid.DataModel.Location;
 import com.example.roberto.thefinderandroid.API.HistoryResponse;
 import com.example.roberto.thefinderandroid.API.Response;
 import java.util.ArrayList;
 
+/**
+ *The HistoryActivity class is responsible for the functionality of the activity_history.
+ * This Activity displays a list of locations that the user has saved.
+ *
+ * @author: Roberto Aguilar
+ */
 
-public class History extends AppCompatActivity implements HistoryResponse.HistoryResponseCommunicator, Response.ResponseCommunicator {
-
+public class HistoryActivity extends AppCompatActivity implements HistoryResponse.HistoryResponseCommunicator, Response.ResponseCommunicator {
 
     private SharedPreferences sharedpreferences;
     private HistoryDialog myDiolog;
     private ListView myList;
-    private CustomAdapter myAdapter;
+    private HistoryAdapter myAdapter;
     private int userID;
     private String auth;
     private ProgressBar progressBar;
     private Activity activity;
 
+    //@desc: sets up the spinner and starts a API call to get users history
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
         userID = sharedpreferences.getInt("UserID", -1);
         auth = sharedpreferences.getString("AuthToken", null);
@@ -55,6 +60,7 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
         activity = this;
     }
 
+    //@desc: Adds the menu bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -62,6 +68,7 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
         return true;
     }
 
+    //@desc: Logs out user if log out was selected
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -73,6 +80,7 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
             return true;
         }
         if(item.getItemId() == R.id.logOut){
+            //checks if user is connected to internet
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
@@ -81,7 +89,7 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
 
                 sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(this, MainActivity.class);
+                Intent intent = new Intent(this, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
@@ -92,11 +100,16 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * @Communicator method from APIcomm: APIcomm gives a ArrayList if Location Objects
+     * @param: Collection - ArrayList of users Location
+     * @desc: Makes a ListView with all the users location
+     */
     @Override
     public void getHistoryResponse(ArrayList<Location> collection) {
         progressBar.setVisibility(View.INVISIBLE);
         myList = (ListView) findViewById(R.id.listView);
-        myAdapter = new CustomAdapter(this, collection);
+        myAdapter = new HistoryAdapter(this, collection);
         myList.setAdapter(myAdapter);
         myList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -104,12 +117,16 @@ public class History extends AppCompatActivity implements HistoryResponse.Histor
                 Location currentClicked = ((Location) parent.getItemAtPosition(position));
                 FragmentManager manager = getFragmentManager();
                 myDiolog = new HistoryDialog();
-                myDiolog.onCreate(currentClicked, activity); // to have a refrence of the name in the diologe
+                myDiolog.onCreate(currentClicked, activity); // to have a reference of the name in the diolog
                 myDiolog.show(manager, "Diologe");
             }
         });
     }
 
+    /**
+     * @Communicator method from APIcomm: Lets this class know Location was successfully deleted
+     * @desc: Gets history after deletion to display the left over locations
+     */
     @Override
     public void getResponse() {
         ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);

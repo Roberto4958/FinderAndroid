@@ -1,7 +1,9 @@
 package com.example.roberto.thefinderandroid.DataModel;
 
 /**
- * Created by roberto on 7/6/16.
+ *The User class holds user information such as User name, first name, last name, authentication token, and ID.
+ *
+ * @author: Roberto Aguilar
  */
 public class User {
     public String userName;

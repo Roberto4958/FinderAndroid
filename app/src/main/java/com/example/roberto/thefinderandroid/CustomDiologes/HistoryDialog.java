@@ -1,7 +1,11 @@
 package com.example.roberto.thefinderandroid.CustomDiologes;
 
 /**
- * Created by roberto on 7/6/16.
+ *The HistoryDialog class is responsible for the functionality of history_dialog.
+ * This dialog displays when a location in is clicked in the history activity.
+ * This dialog gives the user the option to either delete or open maps to the location clicked.
+ *
+ * @author: Roberto Aguilar
  */
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -40,7 +44,7 @@ public class HistoryDialog extends DialogFragment implements View.OnClickListene
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.history_diolog, null);
+        view = inflater.inflate(R.layout.history_dialog, null);
         getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 
@@ -53,6 +57,7 @@ public class HistoryDialog extends DialogFragment implements View.OnClickListene
         return view;
     }
 
+    //@desc: store a reference history activity and location clicked
     public void onCreate(com.example.roberto.thefinderandroid.DataModel.Location location, Activity a) {
         Location = location;
         activity = a;
@@ -60,11 +65,12 @@ public class HistoryDialog extends DialogFragment implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
+        //if delete clicked make a API call to delete location from the database
         if(view.getId() == R.id.DeleteLocation){
             SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
             int userID = sharedpreferences.getInt("UserID", -1);
             String auth = sharedpreferences.getString("AuthToken", null);
-
+            //checks if user is connected to internet
             ConnectivityManager connMgr = (ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
@@ -74,6 +80,7 @@ public class HistoryDialog extends DialogFragment implements View.OnClickListene
             }
             else Toast.makeText(activity.getBaseContext(), "Counld not connect to network", Toast.LENGTH_SHORT).show();
         }
+        //if open clicked makes current location to a json String and sends String to the mapActivity
         else if(view.getId() == R.id.openMap){
             Gson gson = new Gson();
             String loc = gson.toJson(Location);

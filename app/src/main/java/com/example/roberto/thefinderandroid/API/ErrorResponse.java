@@ -1,7 +1,9 @@
 package com.example.roberto.thefinderandroid.API;
 
 /**
- * Created by roberto on 7/28/16.
+ *The ErrorResponse class holds a error message
+ *
+ * @author: Roberto Aguilar
  */
 public class ErrorResponse {
     public String errorType;

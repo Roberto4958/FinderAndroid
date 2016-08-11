@@ -1,7 +1,9 @@
 package com.example.roberto.thefinderandroid.DataModel;
 
 /**
- * Created by roberto on 7/6/16.
+ *The Location class holds Location information such as latitude, longitude, ID, and the name of the location.
+ *
+ * @author: Roberto Aguilar
  */
 public class Location {
     public double latitude;

@@ -1,8 +1,5 @@
 package com.example.roberto.thefinderandroid.CustomAdapter;
 
-/**
- * Created by roberto on 7/6/16.
- */
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,12 +10,20 @@ import com.example.roberto.thefinderandroid.DataModel.Location;
 import com.example.roberto.thefinderandroid.R;
 import java.util.ArrayList;
 
+/**
+ *The HistoryAdapter class is responsible for the customization of custom_row.
+ * This class displays each row with the location name from the Location ArrayList.
+ *
+ * @author: Roberto Aguilar
+ */
 
-public class CustomAdapter extends ArrayAdapter<Location> {
+public class HistoryAdapter extends ArrayAdapter<Location> {
 
-    public CustomAdapter(Context context, ArrayList<Location> places) {
+    public HistoryAdapter(Context context, ArrayList<Location> places) {
         super(context, R.layout.custom_row, places);
     }
+
+    //@desc: sets the text view of each row
     @Override
     public View getView(int i, View v, ViewGroup parent){
         LayoutInflater b = LayoutInflater.from(getContext());

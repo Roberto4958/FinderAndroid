@@ -3,7 +3,11 @@ package com.example.roberto.thefinderandroid.API;
 import com.example.roberto.thefinderandroid.DataModel.User;
 
 /**
- * Created by roberto on 7/15/16.
+ *The UserResponse class holds a user Object, and a status String of the value
+ * "OK" or "ERROR" or "TOKENCLEARD" these values indicate the http response status.
+ * Implemented a UserResponseCommunicator interface to communicate the user object from one class to another.
+ *
+ * @author: Roberto Aguilar
  */
 public class UserResponse extends Response{
 

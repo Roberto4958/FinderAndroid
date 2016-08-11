@@ -18,8 +18,14 @@ import com.example.roberto.thefinderandroid.API.APIcomm;
 import com.example.roberto.thefinderandroid.API.UserResponse;
 import com.example.roberto.thefinderandroid.DataModel.User;
 
+/**
+ *The LogInActivity class is responsible for the functionality of the activity_log_in.
+ * This Activity logs users into their account or navigate user to create a new account.
+ *
+ * @author: Roberto Aguilar
+ */
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, UserResponse.UserResponseCommunicator{
+public class LogInActivity extends AppCompatActivity implements View.OnClickListener, UserResponse.UserResponseCommunicator{
     private EditText Username, pass;
     private Button logIn, addAccount;
     private SharedPreferences sharedpreferences;
@@ -27,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        //check if user is already signed in
         sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
         String user = sharedpreferences.getString("AuthToken", "");
         if(user.length()>0){
@@ -34,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
         }
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_log_in);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -46,12 +54,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addAccount.setOnClickListener(this);
     }
 
+    //@desc: Sets the spinner invisible.
     @Override
     protected void onResume() {
         super.onResume();
         progressBar.setVisibility(View.INVISIBLE);
     }
 
+    /*
+     * @param: word - String giving by they user
+     * @desc: Checks if user gave a valid String
+     */
     public boolean checkIfValid(String word){
 
         if(word.contains("/")){
@@ -76,21 +89,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return true;
     }
+
     @Override
     public void onClick(View view) {
         if(view.getId() == R.id.logIn){
             String userName = Username.getText().toString();
             String password = pass.getText().toString();
 
+            //checks if user filled out the fields
             if(userName.length()<1 || password.length()<1){
                 Toast.makeText(getBaseContext(), "Please fill in the form", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if(!(checkIfValid(userName) && checkIfValid(password)) ){
-                return;
-            }
+            if(!(checkIfValid(userName) && checkIfValid(password)) ) return;
 
+            //Checks if user is connected to the internet
             ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
@@ -106,17 +120,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /*
+     * @Communicator method from APIcomm: APIcomm gives this class the User object
+     * @Param: userInfo - a User object
+     * @Desc: saves user info and starts user Activity
+     */
     @Override
-    public void getUserResponse(User r) {
+    public void getUserResponse(User userInfo) {
         progressBar.setVisibility(View.INVISIBLE);
-        if(r == null){
+        if(userInfo == null){
             Toast.makeText(getBaseContext(), "Wrong user name or password", Toast.LENGTH_SHORT).show();
             return;
         }
         SharedPreferences sharedpreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putInt("UserID", r.ID);
-        editor.putString("AuthToken", r.authToken);
+        editor.putInt("UserID", userInfo.ID);
+        editor.putString("AuthToken", userInfo.authToken);
         editor.commit();
 
         Intent intent = new Intent("com.example.roberto.thefinderandroid.User");

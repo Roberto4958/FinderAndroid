@@ -7,9 +7,9 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-import com.example.roberto.thefinderandroid.CreateAccount;
-import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDiologe;
-import com.example.roberto.thefinderandroid.MainActivity;
+import com.example.roberto.thefinderandroid.CreateAccountActivity;
+import com.example.roberto.thefinderandroid.CustomDiologes.StoreLocationDialog;
+import com.example.roberto.thefinderandroid.LogInActivity;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -25,7 +25,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by roberto on 7/26/16.
+ *The APIcomm class is responsible for making a http request,
+ * and converting the http response to a object and sending it to the appropriate activity.
+ *
+ * @author: Roberto Aguilar
  */
 public class APIcomm extends AsyncTask<String, Void, String> {
 
@@ -42,6 +45,7 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         activity = a;
     }
 
+    //@desc: Encodes users userName and passwords and starts the logIn http request
     public void logIn(String userName, String password){
         try {
             userName = URLEncoder.encode(userName.toString(),"UTF-8");
@@ -55,6 +59,8 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         }
     }
 
+    // @desc: Encodes users UserName, password, first name, and last name
+    // and makes a createAccount http request
     public void createAccount(String userName, String password, String firstName, String lastName){
 
         try {
@@ -73,6 +79,7 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         }
     }
 
+    //@desc: Encodes user place, and makes a addNewLocation http request
     public void addLocation(int userID, double latitude, double longitude, String place, String auth){
         try {
             place = URLEncoder.encode(place.toString(),"UTF-8");
@@ -84,10 +91,8 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             Toast.makeText(activity.getBaseContext(), "Please try a different name", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
-
-
     }
-
+    //@desc: Makes a findLocation http request.
     public void findLocation(int userID, String auth){
         String URL = baseURL+"/findLocation/"+userID+"/"+auth;
         RequestType= "GET";
@@ -95,13 +100,14 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         execute(URL);
     }
 
+    //@desc: Makes a deleteLocation http request
     public void deleteLocation(int userID, int locationID, String auth){
         String URL = baseURL+"/deleteLocation/"+userID+"/"+locationID+"/"+auth;
         RequestType = "DELETE";
         currentRequest = "deleteLocation";
         execute(URL);
     }
-
+    //@desc: Makes a history http request
     public void getHistory(int userID, String auth){
         String URL = baseURL+"/history/"+userID+"/"+auth;
         RequestType = "GET";
@@ -109,6 +115,7 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         execute(URL);
     }
 
+    //@desc: Make a logOut http request
     public void logOut(int userID, String auth){
         String URL = baseURL+"/logOut/"+userID+"/"+auth;
         RequestType = "POST";
@@ -116,11 +123,16 @@ public class APIcomm extends AsyncTask<String, Void, String> {
         execute(URL);
     }
 
-
     @Override
     protected String doInBackground(String... urls) {
             return executeURL(urls[0]);
     }
+
+    /**
+     * @desc: Makes a http request
+     * @param myurl - String url needed to make the http request
+     * @return response from the http request
+     */
     private String executeURL(String myurl) {
         InputStream is = null;
 
@@ -170,110 +182,130 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             }
         }
     }
+
+    /**
+     * @desc: Turns the inputStream into a String
+     * @param stream - http response inputStream
+     * @return http String response
+     */
     public String readIS(InputStream stream) throws IOException {
         Scanner s = new Scanner(stream).useDelimiter("\\A");
         String result = s.hasNext() ? s.next() : "";
         return result;
     }
 
+    /**
+     * @desc: Converts http response into a object and returns it to the users activity
+     * @param response - http response
+     */
     @Override
     protected void onPostExecute(String response) {
         Gson g = new Gson();
 
+        //Checks if there was a error in the http request process
         ErrorResponse error = g.fromJson(response, ErrorResponse.class);
         if(error.errorType != null){
+            //Logs out the user
             SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
-            Intent intent = new Intent(activity, MainActivity.class);
+            Intent intent = new Intent(activity, LogInActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             activity.startActivity(intent);
             Toast.makeText(activity.getBaseContext(), "Error", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        //checks if http request was a logIn
         if(currentRequest.equals("logIn")){
             UserResponse r = g.fromJson(response, UserResponse.class);
 
-            UserCommunicator = (UserResponse.UserResponseCommunicator)activity;
-
-            if (r.status.equals("OK"))
-            {
-                 UserCommunicator.getUserResponse(r.userInfo);
+            if (r.status.equals("OK")){
+                //sends users info to the logIn activity
+                UserCommunicator = (UserResponse.UserResponseCommunicator)activity;
+                UserCommunicator.getUserResponse(r.userInfo);
             }
+
             else if (r.status.equals("ERROR"))
             {
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
                 Toast.makeText(activity.getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
             }
             else
             {
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
         }
-        if(currentRequest.equals("createAccount")){
+        //checks if http request was a createAccount
+        else if(currentRequest.equals("createAccount")){
             UserResponse r = g.fromJson(response, UserResponse.class);
-            UserCommunicator =  (UserResponse.UserResponseCommunicator)activity;
+
 
             if (r.status.equals("OK"))
             {
+                //sends user info to the createAccount activity
+                UserCommunicator =  (UserResponse.UserResponseCommunicator)activity;
                 UserCommunicator.getUserResponse(r.userInfo);
             }
             else if (r.status.equals("ERROR"))
             {
-                Intent intent = new Intent(activity, CreateAccount.class);
+                Intent intent = new Intent(activity, CreateAccountActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
                 Toast.makeText(activity.getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
             }
             else
             {
-                Intent intent = new Intent(activity, CreateAccount.class);
+                Intent intent = new Intent(activity, CreateAccountActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
         }
+        //checks if http request was a addLocation
         else if(currentRequest.equals("addLocation")){
             Response r = g.fromJson(response, Response.class);
             if (r.status.equals("OK"))
             {
+                //lets the user Activity know that location was added
                 Responsecummunicator = (Response.ResponseCommunicator) activity;
                 ((Response.ResponseCommunicator) activity).getResponse();
             }
             else if(r.status.equals("TOKENCLEARED")){
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
             else if (r.status.equals("ERROR"))
             {
-                ((StoreLocationDiologe.Communicator)activity).onDiologMessege("error");
+                ((StoreLocationDialog.Communicator)activity).onDiologMessege("error");
                 Toast.makeText(activity.getBaseContext(), "Server Error", Toast.LENGTH_SHORT).show();
             }
             else
             {
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
         }
+        //checks if http request was a getHistory
         else if(currentRequest.equals("getHistory")){
             HistoryResponse r = g.fromJson(response, HistoryResponse.class);
             if(r.status.equals("OK")){
+                //sends a ArrayList of Locations to the history activity
                 HistoryComunicator = (HistoryResponse.HistoryResponseCommunicator)activity;
                 HistoryComunicator.getHistoryResponse(r.UserLocations);
             }
             else if(r.status.equals("TOKENCLEARED")){
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
@@ -285,21 +317,23 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             {
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
         }
+        //checks if http request was a deleteLocation
         else if(currentRequest.equals("deleteLocation")){
             Response r = g.fromJson(response, Response.class);
             if(r.status.equals("OK")){
+                // lets the history activity know that location was deleted
                 Responsecummunicator = (Response.ResponseCommunicator) activity;
                 Responsecummunicator.getResponse();
             }
             else if(r.status.equals("TOKENCLEARED")){
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
@@ -311,21 +345,23 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             {
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
         }
+        //checks if http request was a findLocation
         else if(currentRequest.equals("findLocation")){
             LocationResponse r = g.fromJson(response, LocationResponse.class);
             if(r.status.equals("OK")){
+                //sends user activity users last location
                 LocationCommunicator = (LocationResponse.LocationResponseCommunicator) activity;
                 LocationCommunicator.getLocationResponse(r.locationInfo);
             }
             else if(r.status.equals("TOKENCLEARED")){
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
@@ -337,7 +373,7 @@ public class APIcomm extends AsyncTask<String, Void, String> {
             {
                 SharedPreferences sharedpreferences = activity.getSharedPreferences("User", Context.MODE_PRIVATE);
                 sharedpreferences.edit().clear().commit();
-                Intent intent = new Intent(activity, MainActivity.class);
+                Intent intent = new Intent(activity, LogInActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }

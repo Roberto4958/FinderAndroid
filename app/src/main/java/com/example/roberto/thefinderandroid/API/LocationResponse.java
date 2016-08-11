@@ -3,7 +3,11 @@ package com.example.roberto.thefinderandroid.API;
 import com.example.roberto.thefinderandroid.DataModel.Location;
 
 /**
- * Created by roberto on 7/15/16.
+ *The LocationResponse class holds a Location, and a status String of the value
+ * "OK" or "ERROR" or "TOKENCLEARD" these values indicate the http response status.
+ * Implemented a LocationResponseCommunicator interface to communicate the location from one class to another.
+ *
+ * @author: Roberto Aguilar
  */
 public class LocationResponse extends Response{
     public Location locationInfo;

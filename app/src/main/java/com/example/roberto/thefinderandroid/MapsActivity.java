@@ -11,6 +11,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
+/**
+ *The MapsActivity class is responsible for the functionality of the activity_maps.
+ * This Activity displays a map
+ *
+ * @author: Roberto Aguilar
+ */
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
     private GoogleMap mMap;
@@ -24,20 +31,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
+    //@desc: Manipulates the map once available
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        //Gets the location that was pushed from the previous activity
         String l = getIntent().getStringExtra("Location");
         Gson gson =  new Gson();
         location = gson.fromJson(l, Location.class);
+
+        //Sets up the map
         mMap = googleMap;
         final LatLng loc = new LatLng(location.latitude,location.longtitude);
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
