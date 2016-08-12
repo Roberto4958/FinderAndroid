@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.roberto.thefinderandroid">
-
+    package="com.thefinder">
+    
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -13,20 +13,20 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LogInActivity">
+        <activity android:name="com.thefinder.Activities.LogInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".CreateAccountActivity">
+        <activity android:name="com.thefinder.Activities.CreateAccountActivity">
             <intent-filter>
                 <action android:name=".CreateAccount" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".UserActivity">
+        <activity android:name="com.thefinder.Activities.UserActivity">
             <intent-filter>
                 <action android:name="com.example.roberto.thefinderandroid.User" />
 
@@ -44,9 +44,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value=""/>
-
         <activity
-            android:name=".MapsActivity"
+            android:name="com.thefinder.Activities.MapsActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="com.example.roberto.thefinderandroid.MapsActivity" />
@@ -54,7 +53,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".HistoryActivity">
+        <activity android:name="com.thefinder.Activities.HistoryActivity">
             <intent-filter>
                 <action android:name="com.example.roberto.thefinderandroid.History" />
 

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:paddingLeft="40dp"
     android:paddingRight="40dp"
-    tools:context=".LogInActivity"
+    tools:context="com.thefinder.Activities.LogInActivity"
     android:background="#000000">
 
     <LinearLayout

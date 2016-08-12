@@ -6,7 +6,7 @@ android {
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
-        applicationId "com.example.roberto.thefinderandroid"
+        applicationId "com.thefinder"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
